@@ -80,11 +80,11 @@ function ShowCar(car)
     while not HasModelLoaded(modelVeh) do --Wait the model to be loaded
         Citizen.Wait(0)
     end
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Nombre de joueurs: '..plyInGame )
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Model de vehicule Chargée' )
+    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Number of player: '..plyInGame )
+    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Vehicle model loaded' )
     personalvehicle = CreateVehicle(modelVeh ,inGar.x, inGar.y, inGar.z, inGar.vh, false, false) --The first False is for make the car not visible on network
     Citizen.InvokeNative(0xB736A491E64A32CF,Citizen.PointerValueIntInitialized(personalvehicle)) --The car will be detroyed when nobody look at it
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Voiture choisie: '..modelVeh)
+    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Car choosen: '..modelVeh)
     SetVehicleOnGroundProperly(personalvehicle) --Be sure the car have 4 wheel on ground
     SetVehicleHasBeenOwnedByPlayer(personalvehicle,true) --Set car is owned by player
     local id = NetworkGetNetworkIdFromEntity(personalvehicle) --Don't know what is that, but is necessary
@@ -305,7 +305,7 @@ AddEventHandler('hc:selectCar', function()
                 FadingOut(500)
                 Wait(500)
                 ready = true --Put player ready
-                TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Entrer Validé')
+                TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Validated')
                 SetModelAsNoLongerNeeded(personalvehicle) --Set car ready to be destroyed
                 Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) --Destroy car in the choosing place
                 Wait(500)
@@ -332,24 +332,23 @@ AddEventHandler('hc:startingBlock', function(spwNum)
     local spawnPos = SpawnPositions[spwNum]
         if GetPlayerTeam(PlayerId()) == 1 then -- police ?
         carList = {"polf430","pol718","polaven","polbuga","polmp4","polp1","polgt500"}
-        carToShow = carList[num] --la 1ere voiture qui va apparaitre, defini tout en haut de cette page de code
+        carToShow = carList[num] --first car to show
     elseif GetPlayerTeam(PlayerId()) == 2 then -- runner ?
         carList = {"adder","banshee2","bullet","cheetah","entityxf","sheava","fmj","infernus","osiris","le7b","reaper","sultanrs","t20","turismor","tyrus","vacca","voltic","prototipo","zentorno"}
         carToShow = carList[num]
     end
-    modelVeh = GetHashKey(carToShow) --Le hashkey est necessaire pour generer la voiture a partir de son nom
-    ---------------------------------- fait apparaitre la voiture choisie en visible pour tout le monde et TP le joueur a l'interieur
+    modelVeh = GetHashKey(carToShow) 
+    ---------------------------------- Make appair the choosen car on network and teleport player in it
     TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^2 Client: carToShow: '..carToShow )
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^2 Client: Position d arrivée: '..spwNum )
     RequestModel(modelVeh)
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Model requesté: '..modelVeh )
+    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Model requested: '..modelVeh )
     while not HasModelLoaded(modelVeh) do
         Citizen.Wait(0)
     end
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Model de vehicule Chargée' )
+    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Vehicle model loaded' )
     personalvehicle = CreateVehicle(modelVeh ,spawnPos[1], spawnPos[2], spawnPos[3], 228.2736, true, false)
 
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Voiture choisie: '..modelVeh)
+    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Choosen Car: '..modelVeh)
 
     SetVehicleOnGroundProperly(personalvehicle)
     SetVehicleHasBeenOwnedByPlayer(personalvehicle,true)
@@ -365,28 +364,27 @@ AddEventHandler('hc:startingBlock', function(spwNum)
 
 -------------------------------  
 
-    FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Bloque la voiture du joueur
-    SetVehicleDoorsLocked(GetVehiclePedIsUsing(GetPlayerPed(-1)), 4) -- Verouille les portes pour que le joueur ne puisse plus sortir de la voiture
-    SetVehicleNumberPlateText(GetVehiclePedIsUsing(GetPlayerPed(-1)), GetPlayerName(PlayerId())) -- Met le pseudo du joueur comme plaque d'immatriculation
-    TriggerServerEvent('hc:plyReady') -- Envoie au serveur que le joueur est pret
-    ready = true --Pret
+    FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Block player car
+    SetVehicleDoorsLocked(GetVehiclePedIsUsing(GetPlayerPed(-1)), 4) -- Lock all door
+    SetVehicleNumberPlateText(GetVehiclePedIsUsing(GetPlayerPed(-1)), GetPlayerName(PlayerId())) -- Change plate by player name
+    TriggerServerEvent('hc:plyReady') -- Send to server that player is ready
+    ready = true --Ready client side
     FadingIn(500)
     DrawMissionText("Waiting for ~h~~y~ other players~w~", 10000)
 end)
 
 
---Le serveur envoie le top depart quand tous les joueurs sont pret
+--The server send "start" to players when all players are ready
 RegisterNetEvent('hc:startRun')
 AddEventHandler('hc:startRun', function()
     Citizen.Wait(500)
-    --enlever l'image du chargement
     N_0x10d373323e5b9c0d()
         if IsPedSittingInAnyVehicle(GetPlayerPed(-1)) then
             if GetPlayerTeam(PlayerId()) == 1 then
                 --blip large
             end
-            FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Bloque la voiture du joueur
---Compte a rebours
+            FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Block player car
+            --Count down
             LastPress3 = GetGameTimer()
             CountDown3()
             Wait(1000)
@@ -402,20 +400,20 @@ AddEventHandler('hc:startRun', function()
             --LastPress2 = 0
             --LastPress3 = 0
             --LastPressGo = 0
---Compte a rebours
+            --Count down
 
-            FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  false) -- Débloque la voiture du joueur
-            SetPlayerWantedLevel(PlayerId(), wantedLevel, false) -- Met le niveau de recherche à 5
-            SetPlayerWantedLevelNow(PlayerId(), false) -- Applique le niveau de recherche maintenant
-            SetVehicleNumberPlateText(GetVehiclePedIsUsing(GetPlayerPed(-1)), GetPlayerName(PlayerId())) -- Met le pseudo du joueur comme plaque d'immatriculation
-            SetVehicleDoorsLocked(GetVehiclePedIsUsing(GetPlayerPed(-1)), 4) -- Verouille les portes pour que le joueur ne puisse plus sortir de la voiture
+            FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  false) -- Unlock player car
+            SetPlayerWantedLevel(PlayerId(), 0, false) -- set wanted level
+            SetPlayerWantedLevelNow(PlayerId(), false) -- apply wanted level now
+            SetVehicleNumberPlateText(GetVehiclePedIsUsing(GetPlayerPed(-1)), GetPlayerName(PlayerId())) -- Change plate by player name
+            SetVehicleDoorsLocked(GetVehiclePedIsUsing(GetPlayerPed(-1)), 4) -- Lock door
             
             gameTimer = GetGameTimer() + 180000
             runInProgress = true
             inRun = true
 
         else
-            TriggerEvent('chatMessage', '', { 0, 0, 0 }, "^2 Client: t'es pas dans une voiture")
+            TriggerEvent('chatMessage', '', { 0, 0, 0 }, "^2 Client: You're not in a car")
         end
 
 end)
@@ -428,10 +426,10 @@ Citizen.CreateThread( function()
                 Wait(500)
                 --EndScreen("Tu t'es fait eu!!", "DeathFailOut") --Determine l'ecran de fin
                 --endScreen = true --Fait afficher l'ecran de fin
-                inRun = false --met le joueur en mode "plus dans la course"
-                ready = false --il n'est plus pret non plus
+                inRun = false --Not "in run" anymore
+                ready = false --Not ready anymore
                 Wait(2500)
-                TriggerServerEvent('hc:runnerDead') --envoie au serveur que le joueur est mort
+                TriggerServerEvent('hc:runnerDead') --Send toi server that player is dead
                 Wait(1000)
                 touch = 0
                 --endScreen = false --arrete d'afficher l'ecran de fin
@@ -448,8 +446,8 @@ Citizen.CreateThread( function()
                 if gameTimer == GetGameTimer() then
                     TriggerServerEvent('hc:runnerWon')
                     touch = 0
-                    inRun = false --met le joueur en mode "plus dans la course"
-                    ready = false --il n'est plus pret non plus
+                    inRun = false --Not "in run" anymore
+                    ready = false --Not ready anymore
                 end
             end
         end
@@ -473,7 +471,7 @@ Citizen.CreateThread( function()
                         if HasEntityBeenDamagedByEntity(GetVehiclePedIsUsing(GetPlayerPed(i)), GetVehiclePedIsUsing(GetPlayerPed(-1)), 1) then
                             srvId = GetPlayerServerId(i)
                             TriggerServerEvent('hc:damageRunner', srvId)
-                            TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Touché! '..srvId)
+                            TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Touched! ')
                         end
                     end
                 end
