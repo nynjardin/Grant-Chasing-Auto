@@ -20,18 +20,18 @@ local function SetTeam()
         print("nombre de flics: "..copsTeam)
         print("nombre de runners: "..runnersTeam)
         TriggerClientEvent('hc:setTeamCop', source)
-        TriggerClientEvent("chatMessage", source, '', { 0, 0, 0 }, "^0* Tu es ^4Flic!")
+        TriggerClientEvent("chatMessage", source, '', { 0, 0, 0 }, "^0* You are Cop!")
         if not cops[source] then
             cops[source] = true 
         elseif runners[source] then
             runners[source] = nil
         end
-    elseif runnersTeam ~= copsTeam then
+    elseif runnersTeam < copsTeam then
         runnersTeam = runnersTeam + 1
         print("nombre de flics: "..copsTeam)
         print("nombre de runners: "..runnersTeam)
         TriggerClientEvent('hc:setTeamRunner', source)
-        TriggerClientEvent("chatMessage", source, '', { 0, 0, 0 }, "^0* Tu es ^1Runner!")
+        TriggerClientEvent("chatMessage", source, '', { 0, 0, 0 }, "^0* You are ^1Runner!")
         if not runners[source] then
             runners[source] = true 
         elseif cops[source] then
@@ -48,10 +48,10 @@ end)
 RegisterServerEvent('hc:firstJoin')
 AddEventHandler('hc:firstJoin', function()
     playerCount = playerCount + 1
-    print("nombre de joueur: "..playerCount)
+    print("Number of players: "..playerCount)
     TriggerClientEvent('hc:numOfPlayers', -1, playerCount)
     name = GetPlayerName(source)
-    TriggerClientEvent("chatMessage", n, '', { 0, 0, 0 }, "^1* Numero "..source.." et nom "..name)
+    TriggerClientEvent("chatMessage", n, '', { 0, 0, 0 }, "^1* Number "..source.." and name "..name)
     SetTeam()
     if not playerList[source] then
         playerList[source] = true
@@ -75,7 +75,7 @@ RegisterServerEvent('hc:plyReady')
 AddEventHandler('hc:plyReady', function()
     playerReady = playerReady + 1
     print("PLayer Ready: "..playerReady)
-    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* "..playerReady.."/^2"..playerCount.."^1 prêt(s)")
+    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* "..playerReady.."/^2"..playerCount.."^1 ready")
     if playerReady == playerCount then
         print("Go Go Go")
         TriggerClientEvent('hc:startRun', -1)
@@ -87,12 +87,12 @@ RegisterServerEvent('hc:damageRunner')
 AddEventHandler('hc:damageRunner', function(n)
     TriggerClientEvent('hc:runnerTouched', n)
     local name = GetPlayerName(source)
-    TriggerClientEvent("chatMessage", n, '', { 0, 0, 0 }, "^0* Tu t'es fais ^1Touché ^0par "..name)
+    TriggerClientEvent("chatMessage", n, '', { 0, 0, 0 }, "^0* You have been ^1touch ^0by "..name)
 end)
 
 RegisterServerEvent('hc:runnerWon')
 AddEventHandler('hc:runnerWon', function()
-    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Les Runners ont gagné!")
+    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Runner Win!!")
     runnerWon = runnerWon + 1
     if runnerWon == runnersTeam then
         TriggerClientEvent('hc:endRun', -1)
@@ -110,15 +110,15 @@ RegisterServerEvent('hc:runnerDead')
 AddEventHandler('hc:runnerDead', function()
 	runnersDead = runnersDead + 1
     local name = GetPlayerName(source)
-	TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* "..name.." s'est fait avoir!!!")
-    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* plus que "..runnersTeam.." runners!!")
-	print(source.." est mort")
+	TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* "..name.." owned!!!")
+    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* only "..runnersTeam.." runners left!!")
+	print(source.." is dead")
     if runnersTeam == runnersDead then
 		TriggerClientEvent('hc:endRun', -1)
 		runnersDead = 0
         playerReady = 0
 		runningInProgress = false
-		TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Nombre de joueur mort: "..runnersDead)
+		TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Number of dead player: "..runnersDead)
         TriggerClientEvent('hc:selectCar', -1)
         copsTeam = 0
         runnersTeam = 0
@@ -133,7 +133,7 @@ AddEventHandler('playerDropped', function()
     playerCount = playerCount - 1
     if playerList[source] then
         playerList[source] = nil
-        print("nombre de joueur: "..playerCount)
+        print("Nomber of players: "..playerCount)
     end
     if playerReady ~= 0 then
         playerReady = playerReady - 1
@@ -141,11 +141,11 @@ AddEventHandler('playerDropped', function()
     if runners[source] then
         runners[source] = nil
         runnersTeam = runnersTeam - 1
-        print("nombre de runner: "..runnersTeam)
+        print("Number of runners: "..runnersTeam)
     elseif cops[source] then
         cops[source] = nil
         copsTeam = copsTeam - 1
-        print("nombre de cop: "..copsTeam)
+        print("Number of cops: "..copsTeam)
     end
     if runnersTeam == 0 then
         runningInProgress = false
