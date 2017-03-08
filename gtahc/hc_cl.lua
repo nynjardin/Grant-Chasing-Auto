@@ -31,27 +31,27 @@ local SpawnPositions = {
 }
 
 local insideGarage = { --1 x, y, z, vehicleHeading, pedHeading
-    {x = -46.56327, y = -1097.382, z = 25.99875, vh = 228.2736, ph = 120.1953}, -- 1 Garage de base
-    {x = 228.721, y = -993.374, z = -99.0, vh = 228.2736, ph = 120.1953}, -- 2 Garage Propre
-    {x = 480.991, y = -1317.7, z = 29.2027, vh = 131.7264, ph = 120.1953}, -- 3 Garage Crade
-    {x = -211.309, y = -1324.41, z = 30.8904, vh = 228.2736, ph = 120.1953}, -- 4 Garage fun
-    {x = 436.441, y = -996.352, z = 25.7738, vh = 228.2736, ph = 120.1953}, -- 5 sous sol garage police
-    {x = 449.511, y = -981.129, z = 43.6916, vh = 228.2736, ph = 120.1953}, -- 6 Toit police station
-    {x = -75.1452, y = -818.625, z = 326.176, vh = 228.2736, ph = 120.1953}, -- 7 Toit du plus grand building de Vice City
-    {x = 110.729, y = 6626.407, z = 31.787, vh = 228.2736, ph = 120.1953}, -- 8 Petit garage Custom - REPLACER
-    {x = -1156.748, y = -2009.824, z = 13.180, vh = 228.2736, ph = 120.1953}, -- 9 Garage Custom moyen
-    {x = 732.951, y = -1086.138, z = 22.168, vh = 228.2736, ph = 120.1953}, -- 10 Garage Pourrit Moyen
-    {x = -334.172, y = -137.801, z = 39.009, vh = 228.2736, ph = 120.1953}, -- 11 Garage Custom moyen
-    {x = 1175.404, y = 2640.987, z = 37.753, vh = 228.2736, ph = 120.1953}, -- 12 Petit garage Custom :p
-    {x = -693.727, y = -757.278, z = 33.684, vh = 228.2736, ph = 120.1953} -- 13 Garage public (pour les flics?)
+    {x = -46.56327, y = -1097.382, z = 25.99875, vh = 228.2736, ph = 120.1953}, -- 1 Basic Garage
+    {x = 228.721, y = -993.374, z = -99.0, vh = 228.2736, ph = 120.1953}, -- 2 Clean Garage
+    {x = 480.991, y = -1317.7, z = 29.2027, vh = 131.7264, ph = 120.1953}, -- 3 Dirty Garage
+    {x = -211.309, y = -1324.41, z = 30.8904, vh = 228.2736, ph = 120.1953}, -- 4 Fun Garage
+    {x = 436.441, y = -996.352, z = 25.7738, vh = 228.2736, ph = 120.1953}, -- 5 Underground Police Garage
+    {x = 449.511, y = -981.129, z = 43.6916, vh = 228.2736, ph = 120.1953}, -- 6 Roof of police station
+    {x = -75.1452, y = -818.625, z = 326.176, vh = 228.2736, ph = 120.1953}, -- 7 Roof of the highest building of Vice City
+    {x = 110.729, y = 6626.407, z = 31.787, vh = 228.2736, ph = 120.1953}, -- 8 Simple Custom Garage
+    {x = -1156.748, y = -2009.824, z = 13.180, vh = 228.2736, ph = 120.1953}, -- 9 Simple Custom Garage
+    {x = 732.951, y = -1086.138, z = 22.168, vh = 228.2736, ph = 120.1953}, -- 10 Dirty Garage Bigger
+    {x = -334.172, y = -137.801, z = 39.009, vh = 228.2736, ph = 120.1953}, -- 11 Simple Custom Garagen
+    {x = 1175.404, y = 2640.987, z = 37.753, vh = 228.2736, ph = 120.1953}, -- 12 Little Custom Garage
+    {x = -693.727, y = -757.278, z = 33.684, vh = 228.2736, ph = 120.1953} -- 13 Carpark 
 }
 
 carList = {"polf430","pol718","polaven","polmp4","polp1","polgt500"}
 runnersCarList = {"adder","banshee2","bullet","cheetah","entityxf","sheava","fmj","infernus","osiris","le7b","reaper","sultanrs","t20","turismor","tyrus","vacca","voltic","prototipo","zentorno"}
 
 
-local num = 1 --Numero de la table des voitures (1 sur 17)
-local carToShow = carList[num] --carToShow devient la voiture a prendre en compte
+local num = 1 --# of the car in car list to show first
+local carToShow = carList[num] --carToShow become the car to show
 
 function FadingOut(time)
     if not IsScreenFadedOut() then
@@ -70,25 +70,25 @@ end
 
 function ShowCar(car)
     if GetPlayerTeam(PlayerId()) == 1 then -- police ?
-        inGar = insideGarage[13] -- changer ce nombre pour changer de garage
+        inGar = insideGarage[13] -- Change this number to chnage the police garage
     elseif GetPlayerTeam(PlayerId()) == 2 then -- runner ?
-        inGar = insideGarage[9] -- changer ce nombre pour changer de garage
+        inGar = insideGarage[9] -- Change this number to chnage the runner garage
     end
     --insideVeh = {-46.56327,-1097.382,25.99875, 228.2736} --coordonnée de l'interieur du garage, la 4eme est l'oriendtation de la voiture
-    modelVeh = GetHashKey(car) --Le hashkey est necessaire pour generer la voiture a partir de son nom
-    RequestModel(modelVeh) --Appel du model de la voiture
-    while not HasModelLoaded(modelVeh) do -- tant que le model n'est pas chargé, ne pas continuer l'execution du code
+    modelVeh = GetHashKey(car) --The necessary hashkey to create the car
+    RequestModel(modelVeh) --Call the car model
+    while not HasModelLoaded(modelVeh) do --Wait the model to be loaded
         Citizen.Wait(0)
     end
     TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Nombre de joueurs: '..plyInGame )
     TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Model de vehicule Chargée' )
-    personalvehicle = CreateVehicle(modelVeh ,inGar.x, inGar.y, inGar.z, inGar.vh, false, false) --Determiné la voiture a afficher, le 1er fasle permet de la rendre visible que pour le joueur qui l'a généré
-    Citizen.InvokeNative(0xB736A491E64A32CF,Citizen.PointerValueIntInitialized(personalvehicle)) --Préparer la voiture a etre detruite des qu'elle sera hors de vue du joueur 
+    personalvehicle = CreateVehicle(modelVeh ,inGar.x, inGar.y, inGar.z, inGar.vh, false, false) --The first False is for make the car not visible on network
+    Citizen.InvokeNative(0xB736A491E64A32CF,Citizen.PointerValueIntInitialized(personalvehicle)) --The car will be detroyed when nobody look at it
     TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Voiture choisie: '..modelVeh)
-    SetVehicleOnGroundProperly(personalvehicle) --S'assure que la voiture soit posé normalement aui sol
-    SetVehicleHasBeenOwnedByPlayer(personalvehicle,true) --Permet au joueur de la demarrer de suite, ou d'entrer dedans sans la braquer
-    local id = NetworkGetNetworkIdFromEntity(personalvehicle) --Aucune idée, mais necessaire a ce que j'ai comprius
-    SetNetworkIdCanMigrate(id, true) --Aucune idée, mais necessaire a ce que j'ai comprius
+    SetVehicleOnGroundProperly(personalvehicle) --Be sure the car have 4 wheel on ground
+    SetVehicleHasBeenOwnedByPlayer(personalvehicle,true) --Set car is owned by player
+    local id = NetworkGetNetworkIdFromEntity(personalvehicle) --Don't know what is that, but is necessary
+    SetNetworkIdCanMigrate(id, true) --Don't know what is that, but is necessary
 --    TaskWarpPedIntoVehicle(GetPlayerPed(-1), personalvehicle ,-1)
 end 
 
@@ -180,7 +180,7 @@ local function spectatePlayer()
                 Wait(2500)
                 TriggerServerEvent('hp:observedDead') --Envoie au serveur que l'observé est mort
             end]]
-            if IsControlJustPressed(1,190) and plyRun < #players then --Fleche droite
+            if IsControlJustPressed(1,190) and plyRun < #players then --Right Arrow
                 FadingOut(500)
                 plyRun = plyRun + 1 
                 plyToSpec = players[plyRun]
@@ -195,7 +195,7 @@ local function spectatePlayer()
                 FadingIn(500)
             end
 
-            if IsControlJustPressed(1,189) and plyRun > 0 then --Fleche gauche
+            if IsControlJustPressed(1,189) and plyRun > 0 then --Left Arrow
                 FadingOut(500)
                 plyRun = plyRun - 1 
                 plyToSpec = players[plyRun]
@@ -256,7 +256,7 @@ AddEventHandler('hc:selectCar', function()
     endScreen = false
     if GetPlayerTeam(PlayerId()) == 1 then -- police ?
         carList = {"polf430","pol718","polaven","polbuga","polmp4","polp1","polgt500"}
-        ShowCar(carList[num]) --la 1ere voiture qui va apparaitre, defini tout en haut de cette page de code
+        ShowCar(carList[num]) --first car to show
     elseif GetPlayerTeam(PlayerId()) == 2 then -- runner ?
         carList = {"adder","banshee2","bullet","cheetah","entityxf","sheava","fmj","infernus","osiris","le7b","reaper","sultanrs","t20","turismor","tyrus","vacca","voltic","prototipo","zentorno"}
         ShowCar(carList[num])
@@ -269,16 +269,16 @@ AddEventHandler('hc:selectCar', function()
 
         if not ready then
 
-            --Choix de la voiture
-            if IsControlJustPressed(1,190) and num < #carList then --Fleche droite
-                SetModelAsNoLongerNeeded(personalvehicle) --Préparer la voiture a etre detruite
-                Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) -- fais disparaitre la voiture
+            --Choosing car
+            if IsControlJustPressed(1,190) and num < #carList then --Right Arrow
+                SetModelAsNoLongerNeeded(personalvehicle) --Set car ready to be destroyed
+                Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) -- Destroy car in the choosing place
                 num = num + 1 
                 carToShow = carList[num]
                 ShowCar(carToShow)
             end
 
-            if IsControlJustPressed(1,189) and num > 1 then --Fleche gauche
+            if IsControlJustPressed(1,189) and num > 1 then --Left Arrow
                 SetModelAsNoLongerNeeded(personalvehicle)
                 Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle))
                 num = num - 1
@@ -287,34 +287,34 @@ AddEventHandler('hc:selectCar', function()
             end
 
             --Affichage de la couleur de la voiture
-            if IsControlJustPressed(1,188) then --Fleche haut
-                SetModelAsNoLongerNeeded(personalvehicle) --Préparer la voiture a etre detruite
-                Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) -- fais disparaitre la voiture
+            if IsControlJustPressed(1,188) then --Up Arrow
+                SetModelAsNoLongerNeeded(personalvehicle) 
+                Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) 
                 ShowCar(carToShow)
             end
 
-            if IsControlJustPressed(1,187) then --Fleche bas
+            if IsControlJustPressed(1,187) then --Down Arrow
                 SetModelAsNoLongerNeeded(personalvehicle)
                 Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle))
                 ShowCar(carToShow)
             end
 
-        --Tant que rien n'est validé, afficher la voiture
-            if IsControlJustPressed(1,201) and plyInGame > 1 then -- 201 correspond a "Valider" soit "Enter" ou "A" sur une manette
+        --as long as nothing validate, show car
+            if IsControlJustPressed(1,201) and plyInGame > 1 then -- 201 : "A" or Enter
                 modelVeh = GetHashKey(carToShow)
                 FadingOut(500)
                 Wait(500)
-                ready = true --passe le joueur en pret
+                ready = true --Put player ready
                 TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Entrer Validé')
-                SetModelAsNoLongerNeeded(personalvehicle) --Préparer la voiture a etre detruite
-                Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) --detruit la voiture dans le magasin
+                SetModelAsNoLongerNeeded(personalvehicle) --Set car ready to be destroyed
+                Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) --Destroy car in the choosing place
                 Wait(500)
-                TriggerServerEvent('hc:carSelected') --Envoie au serveur que la voiture a ete choisie
+                TriggerServerEvent('hc:carSelected') --Send to server car is choosen
             else
-                FreezeEntityPosition(GetPlayerPed(-1),true) --paralyse le joueur
-                SetEntityVisible(GetPlayerPed(-1),false) --le rend invisible
-                SetEntityCoords(personalvehicle, inGar.x, inGar.y, inGar.z,1,0,0,1)-- TP la voiture a cet entroit
-                SetEntityHeading(GetPlayerPed(-1),inGar.ph) -- L'endroit ou le joueur regarde a ce momet la
+                FreezeEntityPosition(GetPlayerPed(-1),true) 
+                SetEntityVisible(GetPlayerPed(-1),false) 
+                SetEntityCoords(personalvehicle, inGar.x, inGar.y, inGar.z,1,0,0,1)
+                SetEntityHeading(GetPlayerPed(-1),inGar.ph) 
                 TaskWarpPedIntoVehicle(GetPlayerPed(-1), personalvehicle ,-1)
                 plyVeh = GetVehiclePedIsUsing(GetPlayerPed(-1))
                 colors = table.pack(GetVehicleColours(plyVeh))
