@@ -11,28 +11,31 @@ local runnerWon = 0
 local cops = {}
 local runners = {}
 local timer = 0
+local placing = 0
+local selectcar = false
 
 local function SetTeam()
-    --a tester a plusieurs:
-    --team = math.random(1,2)
-    --if team == 1 then
+    --team = math.random(1,4)
+    --print("Random Team is: "..team)
+    --if team == 1 or team == 3 then
     --elseif team == 2 then
     if runnersTeam == copsTeam then 
+        TriggerClientEvent('hc:setTeam', source, 1)
         copsTeam = copsTeam + 1
         print("nombre de flics: "..copsTeam)
         print("nombre de runners: "..runnersTeam)
-        TriggerClientEvent('hc:setTeamCop', source)
         TriggerClientEvent("chatMessage", source, '', { 0, 0, 0 }, "^0* You are Cop!")
         if not cops[source] then
             cops[source] = true 
         elseif runners[source] then
             runners[source] = nil
         end
-    elseif runnersTeam < copsTeam then
+    --elseif team == 2 or team == 4 then
+    elseif runnersTeam ~= copsTeam then
+        TriggerClientEvent('hc:setTeam', source, 2)
         runnersTeam = runnersTeam + 1
         print("nombre de flics: "..copsTeam)
         print("nombre de runners: "..runnersTeam)
-        TriggerClientEvent('hc:setTeamRunner', source)
         TriggerClientEvent("chatMessage", source, '', { 0, 0, 0 }, "^0* You are ^1Runner!")
         if not runners[source] then
             runners[source] = true 
@@ -44,7 +47,21 @@ end
 
 RegisterServerEvent('hc:newTeam')
 AddEventHandler('hc:newTeam', function()
+    runnersDead = 0
+    copsDead = 0
+    playerReady = 0
+    runningInProgress = false
+    copsTeam = 0
+    runnersTeam = 0
+    runnerWon = 0
+    timer = 0
+    placing = 0
     SetTeam()
+    if not selectcar then
+        selectcar = true
+        TriggerClientEvent('hc:selectCar', -1)
+    end
+    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^0* New ^1Team!")
 end)
 
 RegisterServerEvent('hc:firstJoin')
@@ -52,8 +69,6 @@ AddEventHandler('hc:firstJoin', function()
     playerCount = playerCount + 1
     print("Number of players: "..playerCount)
     TriggerClientEvent('hc:numOfPlayers', -1, playerCount)
-    name = GetPlayerName(source)
-    TriggerClientEvent("chatMessage", n, '', { 0, 0, 0 }, "^1* Number "..source.." and name "..name)
     SetTeam()
     if not playerList[source] then
         playerList[source] = true
@@ -69,7 +84,8 @@ end)
 RegisterServerEvent('hc:carSelected')
 AddEventHandler('hc:carSelected', function()
 --  Wait(500)
-    placing = playerReady + 1
+    selectcar = false
+    placing = placing + 1
     TriggerClientEvent('hc:startingBlock', source, placing)
 end)
 
@@ -82,6 +98,7 @@ AddEventHandler('hc:plyReady', function()
         print("Go Go Go")
         TriggerClientEvent('hc:startRun', -1)
         runningInProgress = true
+        playerReady = 0
     end
 end)
 
@@ -98,13 +115,17 @@ AddEventHandler('hc:runnerWon', function()
     runnerWon = runnerWon + 1
     if runnerWon == runnersTeam then
         TriggerClientEvent('hc:endRun', -1)
-        TriggerClientEvent('hc:selectCar', -1)
         runnersDead = 0
+        copsDead = 0
         playerReady = 0
         runningInProgress = false
-        copsTeam = 0
-        runnersTeam = 0
         runnerWon = 0
+        timer = 0
+        placing = 0
+        if not selectcar then
+            selectcar = true
+            TriggerClientEvent('hc:selectCar', -1)
+        end
     end
 end)
 
@@ -120,15 +141,17 @@ AddEventHandler('hc:addTime', function()
     if timer == 180 then
         TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Runner Win!!")
         TriggerClientEvent('hc:endRun', -1)
-        TriggerClientEvent('hc:selectCar', -1)
         runnersDead = 0
         copsDead = 0
         playerReady = 0
         runningInProgress = false
-        copsTeam = 0
-        runnersTeam = 0
         runnerWon = 0
         timer = 0
+        placing = 0
+        if not selectcar then
+            selectcar = true
+            TriggerClientEvent('hc:selectCar', -1)
+        end
     end
 end)
 
@@ -141,17 +164,19 @@ AddEventHandler('hc:runnerDead', function()
 	print(source.." is dead")
     if runnersTeam == runnersDead then
         TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Cop Win!!")
-		TriggerClientEvent('hc:endRun', -1)
-		runnersDead = 0
+        TriggerClientEvent('hc:endRun', -1)
+        runnersDead = 0
         copsDead = 0
         playerReady = 0
-		runningInProgress = false
-		TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Number of dead runner: "..runnersDead)
-        TriggerClientEvent('hc:selectCar', -1)
-        copsTeam = 0
-        runnersTeam = 0
+        runningInProgress = false
         runnerWon = 0
         timer = 0
+        placing = 0
+		if not selectcar then
+            selectcar = true
+            TriggerClientEvent('hc:selectCar', -1)
+        end
+		TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Number of dead runner: "..runnersDead)
 	else
 		TriggerClientEvent('hc:joinSpectate', source)
 	end
@@ -169,12 +194,14 @@ AddEventHandler('hc:copDead', function()
         copsDead = 0
         playerReady = 0
         runningInProgress = false
-        TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Number of dead cops: "..copsDead)
-        TriggerClientEvent('hc:selectCar', -1)
-        copsTeam = 0
-        runnersTeam = 0
         runnerWon = 0
         timer = 0
+        placing = 0
+        if not selectcar then
+            selectcar = true
+            TriggerClientEvent('hc:selectCar', -1)
+        end
+        TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Number of dead cops: "..copsDead)
     else
         TriggerClientEvent('hc:joinSpectate', source)
     end
@@ -202,7 +229,21 @@ AddEventHandler('playerDropped', function()
     if runnersTeam == 0 then
         runningInProgress = false
         TriggerClientEvent('hc:endRun', -1)
-        TriggerClientEvent('hc:selectCar', -1)
+        runnersDead = 0
+        copsDead = 0
+        playerReady = 0
+        runningInProgress = false
+        runnerWon = 0
+        timer = 0
+        placing = 0
+        if not selectcar then
+            selectcar = true
+            TriggerClientEvent('hc:selectCar', -1)
+        end
         TriggerClientEvent('hc:numOfPlayers', -1, playerCount)
     end
 end)
+
+--changer les runnersTeam par #runners 
+--bloquer la double execution de selectcar quand les 2 joueurs meurt en meme temps
+--remettre la re selection aleatoire de la team a chaque recommencement

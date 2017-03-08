@@ -69,8 +69,9 @@ end
 
 
 function ShowCar(car)
+    Wait(100)
     if GetPlayerTeam(PlayerId()) == 1 then -- police ?
-        inGar = insideGarage[13] -- Change this number to chnage the police garage
+        inGar = insideGarage[2] -- Change this number to chnage the police garage
     elseif GetPlayerTeam(PlayerId()) == 2 then -- runner ?
         inGar = insideGarage[9] -- Change this number to chnage the runner garage
     end
@@ -89,7 +90,7 @@ function ShowCar(car)
     SetVehicleHasBeenOwnedByPlayer(personalvehicle,true) --Set car is owned by player
     local id = NetworkGetNetworkIdFromEntity(personalvehicle) --Don't know what is that, but is necessary
     SetNetworkIdCanMigrate(id, true) --Don't know what is that, but is necessary
---    TaskWarpPedIntoVehicle(GetPlayerPed(-1), personalvehicle ,-1)
+    TaskWarpPedIntoVehicle(GetPlayerPed(-1), personalvehicle ,-1)
 end 
 
 --fonction pour le choix de la couleur, mais on ne peut pas vraiment le faire...
@@ -232,21 +233,18 @@ Citizen.CreateThread(function()
 end)
 
 
-RegisterNetEvent('hc:setTeamCop')
-AddEventHandler('hc:setTeamCop', function()
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 team: cop')
-    SetPlayerTeam(PlayerId(),  1)
-    teamRunner = false
-    teamCop = true
-end)
-
-RegisterNetEvent('hc:setTeamRunner')
-AddEventHandler('hc:setTeamRunner', function()
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 team: runner')
-    SetPlayerTeam(PlayerId(),  2)
-    teamRunner = true
-    teamCop = false
-
+RegisterNetEvent('hc:setTeam')
+AddEventHandler('hc:setTeam', function(t)
+    SetPlayerTeam(PlayerId(),  t)
+    if t == 1 then
+        TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 team: cop')
+        teamRunner = false
+        teamCop = true
+    elseif t == 2 then
+        TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 team: runner')
+        teamRunner = true
+        teamCop = false
+    end
 end)
 
 
@@ -266,61 +264,59 @@ AddEventHandler('hc:selectCar', function()
     SetEntityHealth(GetPlayerPed(-1), 200)
     while true do
         Citizen.Wait(0)
+            if not ready then
+                --Choosing car
+                if IsControlJustPressed(1,190) and num < #carList then --Right Arrow
+                    SetModelAsNoLongerNeeded(personalvehicle) --Set car ready to be destroyed
+                    Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) -- Destroy car in the choosing place
+                    num = num + 1 
+                    carToShow = carList[num]
+                    ShowCar(carToShow)
+                end
 
-        if not ready then
+                if IsControlJustPressed(1,189) and num > 1 then --Left Arrow
+                    SetModelAsNoLongerNeeded(personalvehicle)
+                    Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle))
+                    num = num - 1
+                    carToShow = carList[num]
+                    ShowCar(carToShow)
+                end
 
-            --Choosing car
-            if IsControlJustPressed(1,190) and num < #carList then --Right Arrow
-                SetModelAsNoLongerNeeded(personalvehicle) --Set car ready to be destroyed
-                Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) -- Destroy car in the choosing place
-                num = num + 1 
-                carToShow = carList[num]
-                ShowCar(carToShow)
-            end
+                --Affichage de la couleur de la voiture
+                if IsControlJustPressed(1,188) then --Up Arrow
+                    SetModelAsNoLongerNeeded(personalvehicle) 
+                    Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) 
+                    ShowCar(carToShow)
+                end
 
-            if IsControlJustPressed(1,189) and num > 1 then --Left Arrow
-                SetModelAsNoLongerNeeded(personalvehicle)
-                Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle))
-                num = num - 1
-                carToShow = carList[num]
-                ShowCar(carToShow)
-            end
+                if IsControlJustPressed(1,187) then --Down Arrow
+                    SetModelAsNoLongerNeeded(personalvehicle)
+                    Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle))
+                    ShowCar(carToShow)
+                end
 
-            --Affichage de la couleur de la voiture
-            if IsControlJustPressed(1,188) then --Up Arrow
-                SetModelAsNoLongerNeeded(personalvehicle) 
-                Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) 
-                ShowCar(carToShow)
-            end
-
-            if IsControlJustPressed(1,187) then --Down Arrow
-                SetModelAsNoLongerNeeded(personalvehicle)
-                Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle))
-                ShowCar(carToShow)
-            end
-
-        --as long as nothing validate, show car
-            if IsControlJustPressed(1,201) and plyInGame > 1 then -- 201 : "A" or Enter
-                modelVeh = GetHashKey(carToShow)
-                FadingOut(500)
-                Wait(500)
-                ready = true --Put player ready
-                TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Validated')
-                SetModelAsNoLongerNeeded(personalvehicle) --Set car ready to be destroyed
-                Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) --Destroy car in the choosing place
-                Wait(500)
-                TriggerServerEvent('hc:carSelected') --Send to server car is choosen
-            else
-                FreezeEntityPosition(GetPlayerPed(-1),true) 
-                SetEntityVisible(GetPlayerPed(-1),false) 
-                SetEntityCoords(personalvehicle, inGar.x, inGar.y, inGar.z,1,0,0,1)
-                SetEntityHeading(GetPlayerPed(-1),inGar.ph) 
-                TaskWarpPedIntoVehicle(GetPlayerPed(-1), personalvehicle ,-1)
-                plyVeh = GetVehiclePedIsUsing(GetPlayerPed(-1))
-                colors = table.pack(GetVehicleColours(plyVeh))
-                extra_colors = table.pack(GetVehicleExtraColours(plyVeh))
-            end
-        else return end
+            --as long as nothing validate, show car
+                if IsControlJustPressed(1,201) and plyInGame > 1 then -- 201 : "A" or Enter
+                    --modelVeh = GetHashKey(carToShow)
+                    FadingOut(500)
+                    Wait(500)
+                    ready = true --Put player ready
+                    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Validated')
+                    SetModelAsNoLongerNeeded(personalvehicle) --Set car ready to be destroyed
+                    Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) --Destroy car in the choosing place
+                    Wait(1000)
+                    TriggerServerEvent('hc:carSelected') --Send to server car is choosen
+                else
+                    FreezeEntityPosition(GetPlayerPed(-1),true) 
+                    SetEntityVisible(GetPlayerPed(-1),false) 
+                    SetEntityCoords(personalvehicle, inGar.x, inGar.y, inGar.z,1,0,0,1)
+                    SetEntityHeading(GetPlayerPed(-1),inGar.ph) 
+                    TaskWarpPedIntoVehicle(GetPlayerPed(-1), personalvehicle ,-1)
+                    plyVeh = GetVehiclePedIsUsing(GetPlayerPed(-1))
+                    colors = table.pack(GetVehicleColours(plyVeh))
+                    extra_colors = table.pack(GetVehicleExtraColours(plyVeh))
+                end
+            else return end
     end
 end)
 
@@ -330,43 +326,44 @@ RegisterNetEvent('hc:startingBlock')
 AddEventHandler('hc:startingBlock', function(spwNum)
     Wait(500)
     local spawnPos = SpawnPositions[spwNum]
-        if GetPlayerTeam(PlayerId()) == 1 then -- police ?
+    if GetPlayerTeam(PlayerId()) == 1 then -- police ?
         carList = {"polf430","pol718","polaven","polbuga","polmp4","polp1","polgt500"}
         carToShow = carList[num] --first car to show
     elseif GetPlayerTeam(PlayerId()) == 2 then -- runner ?
         carList = {"adder","banshee2","bullet","cheetah","entityxf","sheava","fmj","infernus","osiris","le7b","reaper","sultanrs","t20","turismor","tyrus","vacca","voltic","prototipo","zentorno"}
         carToShow = carList[num]
     end
-    modelVeh = GetHashKey(carToShow) 
+    modelVeh2 = GetHashKey(carToShow) 
     ---------------------------------- Make appair the choosen car on network and teleport player in it
     TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^2 Client: carToShow: '..carToShow )
-    RequestModel(modelVeh)
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Model requested: '..modelVeh )
-    while not HasModelLoaded(modelVeh) do
+    RequestModel(modelVeh2)
+    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Model requested: '..modelVeh2 )
+    while not HasModelLoaded(modelVeh2) do
         Citizen.Wait(0)
     end
     TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Vehicle model loaded' )
-    personalvehicle = CreateVehicle(modelVeh ,spawnPos[1], spawnPos[2], spawnPos[3], 228.2736, true, false)
+    personalvehicle2 = CreateVehicle(modelVeh2, spawnPos[1], spawnPos[2], spawnPos[3], 228.2736, true, false)
 
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Choosen Car: '..modelVeh)
+    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Choosen Car: '..modelVeh2)
 
-    SetVehicleOnGroundProperly(personalvehicle)
-    SetVehicleHasBeenOwnedByPlayer(personalvehicle,true)
-    local id = NetworkGetNetworkIdFromEntity(personalvehicle)
+    SetVehicleOnGroundProperly(personalvehicle2)
+    SetVehicleHasBeenOwnedByPlayer(personalvehicle2,true)
+    local id = NetworkGetNetworkIdFromEntity(personalvehicle2)
     SetNetworkIdCanMigrate(id, true)
-    SetEntityCoords(personalvehicle,spawnPos[1],spawnPos[2],spawnPos[3] + 1, 1, 0, 0, 1)
+    SetEntityCoords(personalvehicle2, spawnPos[1], spawnPos[2], spawnPos[3] + 1, 1, 0, 0, 1)
     FreezeEntityPosition(GetPlayerPed(-1),false)
     SetEntityVisible(GetPlayerPed(-1),true)
-    SetVehicleColours(personalvehicle, colors[1], colors[2])
-    SetVehicleExtraColours(personalvehicle, extra_colors[1], extra_colors[2])
-    TaskWarpPedIntoVehicle(GetPlayerPed(-1), personalvehicle ,-1)
-    SetVehicleEngineOn(personalvehicle,  true,  true)
+    SetVehicleColours(personalvehicle2, colors[1], colors[2])
+    SetVehicleExtraColours(personalvehicle2, extra_colors[1], extra_colors[2])
+    TaskWarpPedIntoVehicle(GetPlayerPed(-1), personalvehicle2 ,-1)
+    SetVehicleEngineOn(personalvehicle2,  true,  true)
 
 -------------------------------  
 
     FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Block player car
     SetVehicleDoorsLocked(GetVehiclePedIsUsing(GetPlayerPed(-1)), 4) -- Lock all door
     SetVehicleNumberPlateText(GetVehiclePedIsUsing(GetPlayerPed(-1)), GetPlayerName(PlayerId())) -- Change plate by player name
+    Wait(1000)
     TriggerServerEvent('hc:plyReady') -- Send to server that player is ready
     ready = true --Ready client side
     FadingIn(500)
@@ -434,6 +431,7 @@ Citizen.CreateThread( function()
                 Wait(500)
                 inRun = false --Not "in run" anymore
                 ready = false --Not ready anymore
+                Wait(2500)
                 TriggerServerEvent('hc:copDead')
             end
                 --endScreen = false --arrete d'afficher l'ecran de fin
@@ -452,21 +450,6 @@ Citizen.CreateThread( function()
     end
 end)
 
-Citizen.CreateThread( function()
-    while true do
-        Wait(0)
-        if teamRunner then
-            if inRun then
-                if gameTimer == GetGameTimer() then
-                    TriggerServerEvent('hc:runnerWon')
-                    touch = 0
-                    inRun = false --Not "in run" anymore
-                    ready = false --Not ready anymore
-                end
-            end
-        end
-    end
-end)
 
 Citizen.CreateThread( function()
 	while true do
@@ -491,12 +474,6 @@ Citizen.CreateThread( function()
                 end
             end
             --AddBlipForRadius(GetEntityCoords(GetPlayerPed(-1), true), 500)      
-        elseif teamRunner then --Runners
-            if touch == 3 then
-                Citizen.Wait(5000)
-                ExplodeVehicle(GetVehiclePedIsUsing(GetPlayerPed(-1)), true, true)
-            end
-            --AddBlipForRadius(GetEntityCoords(GetPlayerPed(-1), true), 500)
         end 
     end
 end)
@@ -517,14 +494,17 @@ RegisterNetEvent('hc:endRun')
 AddEventHandler('hc:endRun', function()
     ready = false
     runInProgress = false
-    TriggerServerEvent('hc:newTeam')
+    inRun = false
+    --TriggerServerEvent('hc:newTeam')
 end)
 
 RegisterNetEvent('hc:runnerTouched')
 AddEventHandler('hc:runnerTouched', function()
     touch = touch + 1
-    if touch == 3 then 
-        Wait(2000)
+    if touch == 3 then
+        Citizen.Wait(500)
+        SetEntityHealth(GetPlayerPed(-1), 0)
+        Citizen.Wait(1000)
         AddExplosion(GetEntityCoords(GetPlayerPed(-1)), 6, 0.5, true, false, 0.5)
     end
 end)
