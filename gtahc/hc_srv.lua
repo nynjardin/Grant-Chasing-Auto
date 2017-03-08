@@ -1,6 +1,7 @@
 local playerCount = 0
 local playerList = {}
 local runnersDead = 0
+local copsDead = 0
 local playerReady = 0
 local runningInProgress = false
 local placing = 0
@@ -9,6 +10,7 @@ local copsTeam = 0
 local runnerWon = 0
 local cops = {}
 local runners = {}
+local timer = 0
 
 local function SetTeam()
     --a tester a plusieurs:
@@ -106,26 +108,76 @@ AddEventHandler('hc:runnerWon', function()
     end
 end)
 
+RegisterServerEvent('hc:addTime')
+AddEventHandler('hc:addTime', function()
+    timer = timer + 1
+    if timer == 60 then
+        TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* 2 minutes remaining!!")
+    end
+    if timer == 120 then
+        TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* 1 minute Left!!")
+    end
+    if timer == 180 then
+        TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Runner Win!!")
+        TriggerClientEvent('hc:endRun', -1)
+        TriggerClientEvent('hc:selectCar', -1)
+        runnersDead = 0
+        copsDead = 0
+        playerReady = 0
+        runningInProgress = false
+        copsTeam = 0
+        runnersTeam = 0
+        runnerWon = 0
+        timer = 0
+    end
+end)
+
 RegisterServerEvent('hc:runnerDead')
 AddEventHandler('hc:runnerDead', function()
 	runnersDead = runnersDead + 1
     local name = GetPlayerName(source)
 	TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* "..name.." owned!!!")
-    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* only "..runnersTeam.." runners left!!")
+    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Only "..runnersTeam.." runners left!!")
 	print(source.." is dead")
     if runnersTeam == runnersDead then
+        TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Cop Win!!")
 		TriggerClientEvent('hc:endRun', -1)
 		runnersDead = 0
+        copsDead = 0
         playerReady = 0
 		runningInProgress = false
-		TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Number of dead player: "..runnersDead)
+		TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Number of dead runner: "..runnersDead)
         TriggerClientEvent('hc:selectCar', -1)
         copsTeam = 0
         runnersTeam = 0
         runnerWon = 0
+        timer = 0
 	else
 		TriggerClientEvent('hc:joinSpectate', source)
 	end
+end)
+
+RegisterServerEvent('hc:copDead')
+AddEventHandler('hc:copDead', function()
+    copsDead = copsDead + 1
+    local name = GetPlayerName(source)
+    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* "..name.." is dead!!!")
+    print(source.." is dead")
+    if copsTeam == copsDead then
+        TriggerClientEvent('hc:endRun', -1)
+        runnersDead = 0
+        copsDead = 0
+        playerReady = 0
+        runningInProgress = false
+        TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Number of dead cops: "..copsDead)
+        TriggerClientEvent('hc:selectCar', -1)
+        copsTeam = 0
+        runnersTeam = 0
+        runnerWon = 0
+        timer = 0
+    else
+        TriggerClientEvent('hc:joinSpectate', source)
+    end
 end)
 
 

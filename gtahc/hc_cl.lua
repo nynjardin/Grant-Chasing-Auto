@@ -411,18 +411,16 @@ AddEventHandler('hc:startRun', function()
             gameTimer = GetGameTimer() + 180000
             runInProgress = true
             inRun = true
-
         else
             TriggerEvent('chatMessage', '', { 0, 0, 0 }, "^2 Client: You're not in a car")
         end
-
 end)
 
 Citizen.CreateThread( function()
     while true do
         Wait(0)
-        if teamRunner then
-            if IsPedFatallyInjured(PlayerPedId()) then
+         if IsPedFatallyInjured(PlayerPedId()) then
+            if teamRunner then
                 Wait(500)
                 --EndScreen("Tu t'es fait eu!!", "DeathFailOut") --Determine l'ecran de fin
                 --endScreen = true --Fait afficher l'ecran de fin
@@ -432,7 +430,23 @@ Citizen.CreateThread( function()
                 TriggerServerEvent('hc:runnerDead') --Send toi server that player is dead
                 Wait(1000)
                 touch = 0
+            elseif teamCop then
+                Wait(500)
+                inRun = false --Not "in run" anymore
+                ready = false --Not ready anymore
+                TriggerServerEvent('hc:copDead')
+            end
                 --endScreen = false --arrete d'afficher l'ecran de fin
+        end
+    end
+end)
+
+Citizen.CreateThread( function()
+    while true do
+        Wait(1000)
+        if teamRunner then
+            if inRun then
+                TriggerServerEvent('hc:addTime')
             end
         end
     end
@@ -491,7 +505,6 @@ RegisterNetEvent('hc:numOfPlayers')
 AddEventHandler('hc:numOfPlayers', function(numOfPlayers)
     plyInGame = numOfPlayers
 end)
-
 
 RegisterNetEvent('hc:joinSpectate')
 AddEventHandler('hc:joinSpectate', function()
