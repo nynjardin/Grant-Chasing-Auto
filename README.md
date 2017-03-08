@@ -1,6 +1,12 @@
 # Grant-Chasing-Auto
 A Cop Vs Robber like gamemode for FiveM
 
+## Know Bug ##
+
+* Car don't stuck at there place between placing and starting...
+* The runners can't win
+* Sometime the player don't appear at the garage
+
 ## Todo ##
 
 * Change the blip system to a system more logic with gamemode
