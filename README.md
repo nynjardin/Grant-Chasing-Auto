@@ -10,7 +10,8 @@ A Cop Vs Robber like gamemode for FiveM
 ## Todo ##
 
 * Change the blip system to a system more logic with gamemode
-* Choose new starting point
+* ~~Choose new starting point~~
 * ~~Make Runner can win too (actually, only cop can win)~~
+* Orient correcly vehicle when spanw when ready
 
 Download Police Car I use in gamemode: https://mega.nz/#!TsA03TKT!DIwA6i-ajfVd5Oz3edLweQdH4XlYH6MW8gbTRVuA5SI
