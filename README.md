@@ -13,5 +13,6 @@ A Cop Vs Robber like gamemode for FiveM
 * ~~Choose new starting point~~
 * ~~Make Runner can win too (actually, only cop can win)~~
 * Orient correcly vehicle when spanw when ready
+* Show players with team
 
 Download Police Car I use in gamemode: https://mega.nz/#!TsA03TKT!DIwA6i-ajfVd5Oz3edLweQdH4XlYH6MW8gbTRVuA5SI
