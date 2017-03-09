@@ -12,6 +12,8 @@ local cops = {}
 local runners = {}
 local timer = 0
 local placing = 0
+local placingCop = 0
+local placingRunner = 0
 local selectcar = false
 
 local function SetTeam()
@@ -56,6 +58,8 @@ AddEventHandler('hc:newTeam', function()
     runnerWon = 0
     timer = 0
     placing = 0
+    placingCop = 0
+    placingRunner = 0
     SetTeam()
     if not selectcar then
         selectcar = true
@@ -84,9 +88,14 @@ end)
 RegisterServerEvent('hc:carSelected')
 AddEventHandler('hc:carSelected', function()
 --  Wait(500)
+    if runners[source] then
+        placingRunner = placingRunner + 1
+        TriggerClientEvent('hc:startingBlock', source, placingRunner)
+    elseif cops[source] then
+        placingCop = placingCop + 1
+        TriggerClientEvent('hc:startingBlock', source, placingCop)
+    end
     selectcar = false
-    placing = placing + 1
-    TriggerClientEvent('hc:startingBlock', source, placing)
 end)
 
 RegisterServerEvent('hc:plyReady')
@@ -122,6 +131,8 @@ AddEventHandler('hc:runnerWon', function()
         runnerWon = 0
         timer = 0
         placing = 0
+        placingCop = 0
+        placingRunner = 0
         if not selectcar then
             selectcar = true
             TriggerClientEvent('hc:selectCar', -1)
@@ -148,6 +159,8 @@ AddEventHandler('hc:addTime', function()
         runnerWon = 0
         timer = 0
         placing = 0
+        placingCop = 0
+        placingRunner = 0
         if not selectcar then
             selectcar = true
             TriggerClientEvent('hc:selectCar', -1)
@@ -172,6 +185,8 @@ AddEventHandler('hc:runnerDead', function()
         runnerWon = 0
         timer = 0
         placing = 0
+        placingCop = 0
+        placingRunner = 0
 		if not selectcar then
             selectcar = true
             TriggerClientEvent('hc:selectCar', -1)
@@ -197,6 +212,8 @@ AddEventHandler('hc:copDead', function()
         runnerWon = 0
         timer = 0
         placing = 0
+        placingCop = 0
+        placingRunner = 0
         if not selectcar then
             selectcar = true
             TriggerClientEvent('hc:selectCar', -1)
@@ -236,6 +253,8 @@ AddEventHandler('playerDropped', function()
         runnerWon = 0
         timer = 0
         placing = 0
+        placingCop = 0
+        placingRunner = 0
         if not selectcar then
             selectcar = true
             TriggerClientEvent('hc:selectCar', -1)

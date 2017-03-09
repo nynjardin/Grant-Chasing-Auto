@@ -30,6 +30,32 @@ local SpawnPositions = {
     {-3094.84, 1350.37, 20.2345}
 }
 
+local SpawRunnersPos = {
+    {-830.410,-2364.311,14.089,147.948},
+    {-821.878,-2362.403,14.089,331.732},
+    {-805.301,-2352.664,14.083,152.095},
+    {-800.602,-2336.376,14.084,139.074},
+    {-791.258,-2379.172,14.087,330.169},
+    {-776.310,-2387.846,14.083,330.493},
+    {-761.371,-2396.106,14.087,334.174},
+    {-755.459,-2383.333,14.084,133.310},
+    {-762.482,-2375.981,14.084,129.708},
+    {-752.552,-2401.187,14.085,331.108}
+}
+
+local SpawCopsPos = {
+    {-595.217,-2310.977,13.343,138.399},
+    {-592.091,-2312.908,13.345,139.513},
+    {-589.847,-2315.841,13.343,139.394},
+    {-587.641,-2317.791,13.344,143.773},
+    {-585.428,-2320.695,13.342,141.393},
+    {-582.744,-2323.122,13.341,137.207},
+    {-579.516,-2324.729,13.342,144.204},
+    {-576.659,-2326.716,13.342,140.955},
+    {-574.406,-2329.519,13.341,137.968},
+    {-571.498,-2331.458,13.343,141.296}
+}
+
 local insideGarage = { --1 x, y, z, vehicleHeading, pedHeading
     {x = -46.56327, y = -1097.382, z = 25.99875, vh = 228.2736, ph = 120.1953}, -- 1 Basic Garage
     {x = 228.721, y = -993.374, z = -99.0, vh = 228.2736, ph = 120.1953}, -- 2 Clean Garage
@@ -329,9 +355,11 @@ AddEventHandler('hc:startingBlock', function(spwNum)
     if GetPlayerTeam(PlayerId()) == 1 then -- police ?
         carList = {"polf430","pol718","polaven","polbuga","polmp4","polp1","polgt500"}
         carToShow = carList[num] --first car to show
+        spawnPos = SpawCopsPos[spwNum]
     elseif GetPlayerTeam(PlayerId()) == 2 then -- runner ?
         carList = {"adder","banshee2","bullet","cheetah","entityxf","sheava","fmj","infernus","osiris","le7b","reaper","sultanrs","t20","turismor","tyrus","vacca","voltic","prototipo","zentorno"}
         carToShow = carList[num]
+        spawnPos = SpawRunnersPos[spwNum]
     end
     modelVeh2 = GetHashKey(carToShow) 
     ---------------------------------- Make appair the choosen car on network and teleport player in it
@@ -350,7 +378,7 @@ AddEventHandler('hc:startingBlock', function(spwNum)
     SetVehicleHasBeenOwnedByPlayer(personalvehicle2,true)
     local id = NetworkGetNetworkIdFromEntity(personalvehicle2)
     SetNetworkIdCanMigrate(id, true)
-    SetEntityCoords(personalvehicle2, spawnPos[1], spawnPos[2], spawnPos[3] + 1, 1, 0, 0, 1)
+    SetEntityCoords(personalvehicle2, spawnPos[1], spawnPos[2], spawnPos[3] + 1, spawnPos[4], 0, 0, 1)
     FreezeEntityPosition(GetPlayerPed(-1),false)
     SetEntityVisible(GetPlayerPed(-1),true)
     SetVehicleColours(personalvehicle2, colors[1], colors[2])
