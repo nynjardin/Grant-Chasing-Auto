@@ -321,6 +321,30 @@ AddEventHandler('hc:selectCar', function()
                     ShowCar(carToShow)
                 end
 
+                if IsControlJustPressed(1,206) or IsControlJustPressed(1,205) then --RB or LB
+                    if GetPlayerTeam(PlayerId()) == 1 then
+                        SetPlayerTeam(PlayerId(),  2)
+                        teamRunner = true
+                        teamCop = false
+                        carList = {"adder","banshee2","bullet","cheetah","entityxf","sheava","fmj","infernus","osiris","le7b","reaper","sultanrs","t20","turismor","tyrus","vacca","voltic","prototipo","zentorno"}
+                        num = 1
+                        carToShow = carList[num]
+                        ShowCar(carToShow)
+                        local plyTeam = GetPlayerTeam(PlayerId())
+                        TriggerServerEvent('hc:changeTeam', plyTeam) --Send to server car is choosen
+                    elseif GetPlayerTeam(PlayerId()) == 2 then
+                        SetPlayerTeam(PlayerId(),  1)
+                        teamRunner = false
+                        teamCop = true
+                        carList = {"polf430","pol718","polaven","polbuga","polmp4","polp1","polgt500"}
+                        num = 1
+                        carToShow = carList[num]
+                        ShowCar(carToShow)
+                        local plyTeam = GetPlayerTeam(PlayerId())
+                        TriggerServerEvent('hc:changeTeam', plyTeam) --Send to server car is choosen
+                    end
+                end
+
             --as long as nothing validate, show car
                 if IsControlJustPressed(1,201) and plyInGame > 1 then -- 201 : "A" or Enter
                     --modelVeh = GetHashKey(carToShow)

@@ -29,7 +29,8 @@ local function SetTeam()
         TriggerClientEvent("chatMessage", source, '', { 0, 0, 0 }, "^0* You are Cop!")
         if not cops[source] then
             cops[source] = true 
-        elseif runners[source] then
+        end
+        if runners[source] then
             runners[source] = nil
         end
     --elseif team == 2 or team == 4 then
@@ -41,7 +42,8 @@ local function SetTeam()
         TriggerClientEvent("chatMessage", source, '', { 0, 0, 0 }, "^0* You are ^1Runner!")
         if not runners[source] then
             runners[source] = true 
-        elseif cops[source] then
+        end
+        if cops[source] then
             cops[source] = nil
         end
     end
@@ -66,6 +68,31 @@ AddEventHandler('hc:newTeam', function()
         TriggerClientEvent('hc:selectCar', -1)
     end
     TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^0* New ^1Team!")
+end)
+
+RegisterServerEvent('hc:changeTeam')
+AddEventHandler('hc:changeTeam', function(team)
+    if team == 1 then
+        if not cops[source] then
+            cops[source] = true
+            copsTeam = copsTeam + 1
+        end
+        if runners[source] then
+            runners[source] = nil
+            runnersTeam = runnersTeam - 1
+        end
+    elseif team == 2 then
+        if not runners[source] then
+            runners[source] = true 
+            runnersTeam = runnersTeam + 1
+        end
+        if cops[source] then
+            cops[source] = nil
+            copsTeam = copsTeam - 1
+        end
+    end
+    print("nombre de flics: "..copsTeam)
+    print("nombre de runners: "..runnersTeam)
 end)
 
 RegisterServerEvent('hc:firstJoin')
@@ -263,6 +290,6 @@ AddEventHandler('playerDropped', function()
     end
 end)
 
---changer les runnersTeam par #runners 
---bloquer la double execution de selectcar quand les 2 joueurs meurt en meme temps
---remettre la re selection aleatoire de la team a chaque recommencement
+
+
+--Menu qui affiche les joueurs et leur team (Bleu Police et Rouge Runner)
