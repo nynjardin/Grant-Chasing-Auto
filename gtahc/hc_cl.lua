@@ -322,6 +322,8 @@ AddEventHandler('hc:selectCar', function()
                 end
 
                 if IsControlJustPressed(1,206) or IsControlJustPressed(1,205) then --RB or LB
+                    FadingOut(500)
+                    Wait(500)
                     if GetPlayerTeam(PlayerId()) == 1 then
                         SetPlayerTeam(PlayerId(),  2)
                         teamRunner = true
@@ -343,6 +345,8 @@ AddEventHandler('hc:selectCar', function()
                         local plyTeam = GetPlayerTeam(PlayerId())
                         TriggerServerEvent('hc:changeTeam', plyTeam) --Send to server car is choosen
                     end
+                    Wait(500)
+                    FadingIn(500)
                 end
 
             --as long as nothing validate, show car
@@ -490,6 +494,16 @@ Citizen.CreateThread( function()
         end
     end
 end)
+
+Citizen.CreateThread( function()
+    while true do
+        Wait(0)
+        if not inRun then
+            FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Block player car
+        end
+    end
+end)
+
 
 Citizen.CreateThread( function()
     while true do

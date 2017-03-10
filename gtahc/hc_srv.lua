@@ -115,6 +115,7 @@ end)
 RegisterServerEvent('hc:carSelected')
 AddEventHandler('hc:carSelected', function()
 --  Wait(500)
+
     if runners[source] then
         placingRunner = placingRunner + 1
         TriggerClientEvent('hc:startingBlock', source, placingRunner)
@@ -291,5 +292,6 @@ AddEventHandler('playerDropped', function()
 end)
 
 
-
+--Creer une zone dans laquel, des que l'ont entre, le gamemode se declanche
 --Menu qui affiche les joueurs et leur team (Bleu Police et Rouge Runner)
+--Empecher le jeux de se lancer s'il y a plus de runner que de policer
