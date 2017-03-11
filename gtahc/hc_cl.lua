@@ -374,6 +374,7 @@ Citizen.CreateThread(function()
             DrawMarker(1, GCAStart[1], GCAStart[2], GCAStart[3], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 8.0, 1000.0, 255, 255, 255, 70, 0, 0, 2, 0, 0, 0, 0)
             local lPlyCoords = GetEntityCoords(GetPlayerPed(-1), true)
             if GetDistanceBetweenCoords(lPlyCoords.x, lPlyCoords.y, lPlyCoords.z, GCAStart[1], GCAStart[2], GCAStart[3], true) < 4 then
+                DrawMissionText("Press ~g~'A' ~s~or ~b~'Enter' ~s~to start ~h~~r~Grant Chasing Auto", 10000)
                 if IsControlJustPressed(1,201) then
                     GCA = true
                     TriggerServerEvent('hc:firstJoin')

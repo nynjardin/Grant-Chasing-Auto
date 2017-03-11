@@ -319,6 +319,6 @@ AddEventHandler('playerDropped', function()
 end)
 
 
---Creer une zone dans laquel, des que l'ont entre, le gamemode se declanche (Utiliser une variable pour ça, sur le client 'local GCA = true' et verifier ça chaque commande reçu par le server)
+--Mettre un message quand le joueur est au marqueur pour lui dire quoi faire
 --Menu qui affiche les joueurs et leur team (Bleu Police et Rouge Runner)
 --Empecher le jeux de se lancer s'il y a plus de runner que de policer
