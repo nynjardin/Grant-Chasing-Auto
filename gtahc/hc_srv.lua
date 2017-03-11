@@ -252,6 +252,33 @@ AddEventHandler('hc:copDead', function()
     end
 end)
 
+RegisterServerEvent('hc:plyQuit')
+AddEventHandler('hc:plyQuit', function()
+    if runners[source] then
+        runners[source] = nil
+        runnersTeam = runnersTeam - 1
+        print("Number of runners: "..runnersTeam)
+    elseif cops[source] then
+        cops[source] = nil
+        copsTeam = copsTeam - 1
+        print("Number of cops: "..copsTeam)
+    end
+    if playerList[source] then
+        playerList[source] = nil
+    end
+    playerCount = playerCount - 1
+    runningInProgress = false
+    runnersDead = 0
+    copsDead = 0
+    playerReady = 0
+    runningInProgress = false
+    runnerWon = 0
+    timer = 0
+    placing = 0
+    placingCop = 0
+    placingRunner = 0
+end)
+
 
 AddEventHandler('playerDropped', function()
     playerCount = playerCount - 1
@@ -292,6 +319,6 @@ AddEventHandler('playerDropped', function()
 end)
 
 
---Creer une zone dans laquel, des que l'ont entre, le gamemode se declanche
+--Creer une zone dans laquel, des que l'ont entre, le gamemode se declanche (Utiliser une variable pour ça, sur le client 'local GCA = true' et verifier ça chaque commande reçu par le server)
 --Menu qui affiche les joueurs et leur team (Bleu Police et Rouge Runner)
 --Empecher le jeux de se lancer s'il y a plus de runner que de policer

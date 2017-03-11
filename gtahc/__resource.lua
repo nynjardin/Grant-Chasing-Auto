@@ -6,5 +6,4 @@ description 'Gamemode by Nynjardin.'
 
 client_script 'hc_cl.lua'
 client_script 'playerblips.lua'
-client_script 'plylist.lua'
 server_script 'hc_srv.lua'

@@ -11,6 +11,14 @@ local plyInGame = 0
 local inRun = false
 local gameTimer = 0
 
+local GCA = false
+
+local pr = 255
+local pg = 255
+local pb = 255
+
+local GCAStart = {-696.443, -2466.711, 13.828}
+
 local SpawnPositions = {
     {-3113.44, 1274.56, 20.2978},
     {-3113.29, 1280.34, 20.3221},
@@ -72,12 +80,83 @@ local insideGarage = { --1 x, y, z, vehicleHeading, pedHeading
     {x = -693.727, y = -757.278, z = 33.684, vh = 228.2736, ph = 120.1953} -- 13 Carpark 
 }
 
-carList = {"polf430","pol718","polaven","polmp4","polp1","polgt500"}
-runnersCarList = {"adder","banshee2","bullet","cheetah","entityxf","sheava","fmj","infernus","osiris","le7b","reaper","sultanrs","t20","turismor","tyrus","vacca","voltic","prototipo","zentorno"}
+local carList = {"polf430","pol718","polaven","polmp4","polp1","polgt500"}
+local runnersCarList = {"adder","banshee2","bullet","cheetah","entityxf","sheava","fmj","infernus","osiris","le7b","reaper","sultanrs","t20","turismor","tyrus","vacca","voltic","prototipo","zentorno"}
 
 
 local num = 1 --# of the car in car list to show first
 local carToShow = carList[num] --carToShow become the car to show
+
+local function DrawPlayerList()
+    local players = {}
+
+    for i = 0, 31 do
+        if NetworkIsPlayerActive( i ) then
+            table.insert( players, i )
+        end
+    end
+    
+    --Top bar
+    DrawRect( 0.11, 0.025, 0.2, 0.03, 0, 0, 0, 220 )
+    
+    --Top bar title
+    SetTextFont( 4 )
+    SetTextProportional( 0 )
+    SetTextScale( 0.45, 0.45 )
+    SetTextColour( 255, 255, 255, 255 )
+    SetTextDropShadow( 0, 0, 0, 0, 255 )
+    SetTextEdge( 1, 0, 0, 0, 255 )
+    SetTextEntry( "STRING" )
+    AddTextComponentString( "Players: " .. #players )
+    DrawText( 0.015, 0.007 )
+    
+    for k, v in pairs( players ) do
+        local r
+        local g
+        local b
+        
+        if k % 2 == 0 then
+            r = 68
+            g = 68
+            b = 68
+        else
+            r = 74
+            g = 74
+            b = 74
+        end
+        if GetPlayerTeam(v) == 1 then
+            pr = 0
+            pg = 180
+            pb = 255
+        elseif GetPlayerTeam(v) == 2 then
+            pr = 220
+            pg = 0
+            pb = 0
+        end
+        
+        --Row BG
+        DrawRect( 0.11, 0.025 + ( k * 0.03 ), 0.2, 0.03, r, g, b, 220 )
+        
+        --Name Label
+        SetTextFont( 4 )
+        SetTextScale( 0.45, 0.45 )
+       
+        SetTextColour( pr, pg, pb, 255 )
+        SetTextEntry( "STRING" )
+        AddTextComponentString( GetPlayerName( v ) )
+        DrawText( 0.015, 0.007 + ( k * 0.03 ) )
+        
+        --Talk Indicator
+        local transparency = 60
+        
+        if NetworkIsPlayerTalking( v ) then
+            transparency = 255
+        end
+        
+        DrawSprite( "mplobby", "mp_charcard_stats_icons9", 0.2, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 255, 255, 255, transparency )
+    end
+end
+
 
 function FadingOut(time)
     if not IsScreenFadedOut() then
@@ -248,28 +327,87 @@ local function spectatePlayer()
     end
 end
 
+function QuitGCA()
+    if GCA then
+        GCA = false
+        ready = true
+        touch = 0
+        runInProgress = false
+        teamCop = false
+        teamRunner = false
+        ready = false
+        plyRun = 0
+        plyInGame = 0
+        inRun = false
+        gameTimer = 0
+        ready = false
+        SetPlayerTeam(PlayerId(),  3)
+        FreezeEntityPosition(GetPlayerPed(-1),false)
+        SetEntityVisible(GetPlayerPed(-1),true)
+        --TaskLeaveVehicle(GetPlayerPed(-1), GetVehiclePedIsUsing(GetPlayerPed(-1)), 0) --Le joueur sors de la voiture
+        SetEntityCoords(GetPlayerPed(-1), GCAStart[1], GCAStart[2], GCAStart[3], 1, 0, 0, 1)
+        SetModelAsNoLongerNeeded(personalvehicle)
+        Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) --Destroy car in the choosing place
+        TriggerServerEvent('hc:plyQuit')
+        --local lPlyCoords = GetEntityCoords(GetPlayerPed(-1), true)
+        --RequestCollisionAtCoord(lPlyCoords.x, lPlyCoords.y, lPlyCoords.z, 1)
+        --NetworkSetInSpectatorMode(0, GetPlayerPed(-1))
+        
+    end
+end
+
 Citizen.CreateThread(function()
     while true do
         Wait(0)
-        if NetworkIsSessionStarted() then
-            TriggerServerEvent('hc:firstJoin')
-            return
+        if not GCA then
+            touch = 0
+            runInProgress = false
+            teamCop = false
+            teamRunner = false
+            ready = false
+            plyRun = 0
+            plyInGame = 0
+            inRun = false
+            gameTimer = 0
+            ready = false
+            SetPlayerTeam(PlayerId(),  3)
+            DrawMarker(1, GCAStart[1], GCAStart[2], GCAStart[3], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 8.0, 1000.0, 255, 255, 255, 70, 0, 0, 2, 0, 0, 0, 0)
+            local lPlyCoords = GetEntityCoords(GetPlayerPed(-1), true)
+            if GetDistanceBetweenCoords(lPlyCoords.x, lPlyCoords.y, lPlyCoords.z, GCAStart[1], GCAStart[2], GCAStart[3], true) < 4 then
+                if IsControlJustPressed(1,201) then
+                    GCA = true
+                    TriggerServerEvent('hc:firstJoin')
+                end
+            end
         end
     end
 end)
 
+--[[Citizen.CreateThread(function()
+    while true do
+        Wait(0)
+        if NetworkIsSessionStarted() then
+            TriggerServerEvent('hc:firstJoin')
+            GCA = true
+            return
+        end
+    end
+end)]]
+
 
 RegisterNetEvent('hc:setTeam')
 AddEventHandler('hc:setTeam', function(t)
-    SetPlayerTeam(PlayerId(),  t)
-    if t == 1 then
-        TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 team: cop')
-        teamRunner = false
-        teamCop = true
-    elseif t == 2 then
-        TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 team: runner')
-        teamRunner = true
-        teamCop = false
+    if GCA then
+        SetPlayerTeam(PlayerId(),  t)
+        if t == 1 then
+            TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 team: cop')
+            teamRunner = false
+            teamCop = true
+        elseif t == 2 then
+            TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 team: runner')
+            teamRunner = true
+            teamCop = false
+        end
     end
 end)
 
@@ -277,6 +415,7 @@ end)
 RegisterNetEvent('hc:selectCar')
 AddEventHandler('hc:selectCar', function()
     
+        
     endScreen = false
     if GetPlayerTeam(PlayerId()) == 1 then -- police ?
         carList = {"polf430","pol718","polaven","polbuga","polmp4","polp1","polgt500"}
@@ -290,6 +429,7 @@ AddEventHandler('hc:selectCar', function()
     SetEntityHealth(GetPlayerPed(-1), 200)
     while true do
         Citizen.Wait(0)
+        if GCA then
             if not ready then
                 --Choosing car
                 if IsControlJustPressed(1,190) and num < #carList then --Right Arrow
@@ -348,7 +488,9 @@ AddEventHandler('hc:selectCar', function()
                     Wait(500)
                     FadingIn(500)
                 end
-
+                if IsControlJustPressed(1,202) then -- "B" or "Cancel"
+                    QuitGCA()
+                end
             --as long as nothing validate, show car
                 if IsControlJustPressed(1,201) and plyInGame > 1 then -- 201 : "A" or Enter
                     --modelVeh = GetHashKey(carToShow)
@@ -360,7 +502,7 @@ AddEventHandler('hc:selectCar', function()
                     Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(personalvehicle)) --Destroy car in the choosing place
                     Wait(1000)
                     TriggerServerEvent('hc:carSelected') --Send to server car is choosen
-                else
+                elseif GCA then
                     FreezeEntityPosition(GetPlayerPed(-1),true) 
                     SetEntityVisible(GetPlayerPed(-1),false) 
                     SetEntityCoords(personalvehicle, inGar.x, inGar.y, inGar.z,1,0,0,1)
@@ -371,67 +513,72 @@ AddEventHandler('hc:selectCar', function()
                     extra_colors = table.pack(GetVehicleExtraColours(plyVeh))
                 end
             else return end
+        end
     end
+
 end)
 
 
 
 RegisterNetEvent('hc:startingBlock')
 AddEventHandler('hc:startingBlock', function(spwNum)
-    Wait(500)
-    local spawnPos = SpawnPositions[spwNum]
-    if GetPlayerTeam(PlayerId()) == 1 then -- police ?
-        carList = {"polf430","pol718","polaven","polbuga","polmp4","polp1","polgt500"}
-        carToShow = carList[num] --first car to show
-        spawnPos = SpawCopsPos[spwNum]
-    elseif GetPlayerTeam(PlayerId()) == 2 then -- runner ?
-        carList = {"adder","banshee2","bullet","cheetah","entityxf","sheava","fmj","infernus","osiris","le7b","reaper","sultanrs","t20","turismor","tyrus","vacca","voltic","prototipo","zentorno"}
-        carToShow = carList[num]
-        spawnPos = SpawRunnersPos[spwNum]
+    if GCA then
+        Wait(500)
+        local spawnPos = SpawnPositions[spwNum]
+        if GetPlayerTeam(PlayerId()) == 1 then -- police ?
+            carList = {"polf430","pol718","polaven","polbuga","polmp4","polp1","polgt500"}
+            carToShow = carList[num] --first car to show
+            spawnPos = SpawCopsPos[spwNum]
+        elseif GetPlayerTeam(PlayerId()) == 2 then -- runner ?
+            carList = {"adder","banshee2","bullet","cheetah","entityxf","sheava","fmj","infernus","osiris","le7b","reaper","sultanrs","t20","turismor","tyrus","vacca","voltic","prototipo","zentorno"}
+            carToShow = carList[num]
+            spawnPos = SpawRunnersPos[spwNum]
+        end
+        modelVeh2 = GetHashKey(carToShow) 
+        ---------------------------------- Make appair the choosen car on network and teleport player in it
+        TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^2 Client: carToShow: '..carToShow )
+        RequestModel(modelVeh2)
+        TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Model requested: '..modelVeh2 )
+        while not HasModelLoaded(modelVeh2) do
+            Citizen.Wait(0)
+        end
+        TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Vehicle model loaded' )
+        personalvehicle2 = CreateVehicle(modelVeh2, spawnPos[1], spawnPos[2], spawnPos[3], 228.2736, true, false)
+
+        TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Choosen Car: '..modelVeh2)
+
+        SetVehicleOnGroundProperly(personalvehicle2)
+        SetVehicleHasBeenOwnedByPlayer(personalvehicle2,true)
+        local id = NetworkGetNetworkIdFromEntity(personalvehicle2)
+        SetNetworkIdCanMigrate(id, true)
+        SetEntityCoords(personalvehicle2, spawnPos[1], spawnPos[2], spawnPos[3] + 1, spawnPos[4], 0, 0, 1)
+        FreezeEntityPosition(GetPlayerPed(-1),false)
+        SetEntityVisible(GetPlayerPed(-1),true)
+        SetVehicleColours(personalvehicle2, colors[1], colors[2])
+        SetVehicleExtraColours(personalvehicle2, extra_colors[1], extra_colors[2])
+        TaskWarpPedIntoVehicle(GetPlayerPed(-1), personalvehicle2 ,-1)
+        SetVehicleEngineOn(personalvehicle2,  true,  true)
+
+    -------------------------------  
+
+        FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Block player car
+        SetVehicleDoorsLocked(GetVehiclePedIsUsing(GetPlayerPed(-1)), 4) -- Lock all door
+        SetVehicleNumberPlateText(GetVehiclePedIsUsing(GetPlayerPed(-1)), GetPlayerName(PlayerId())) -- Change plate by player name
+        Wait(1000)
+        TriggerServerEvent('hc:plyReady') -- Send to server that player is ready
+        ready = true --Ready client side
+        FadingIn(500)
+        DrawMissionText("Waiting for ~h~~y~ other players~w~", 10000)
     end
-    modelVeh2 = GetHashKey(carToShow) 
-    ---------------------------------- Make appair the choosen car on network and teleport player in it
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^2 Client: carToShow: '..carToShow )
-    RequestModel(modelVeh2)
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Model requested: '..modelVeh2 )
-    while not HasModelLoaded(modelVeh2) do
-        Citizen.Wait(0)
-    end
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Vehicle model loaded' )
-    personalvehicle2 = CreateVehicle(modelVeh2, spawnPos[1], spawnPos[2], spawnPos[3], 228.2736, true, false)
-
-    TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Choosen Car: '..modelVeh2)
-
-    SetVehicleOnGroundProperly(personalvehicle2)
-    SetVehicleHasBeenOwnedByPlayer(personalvehicle2,true)
-    local id = NetworkGetNetworkIdFromEntity(personalvehicle2)
-    SetNetworkIdCanMigrate(id, true)
-    SetEntityCoords(personalvehicle2, spawnPos[1], spawnPos[2], spawnPos[3] + 1, spawnPos[4], 0, 0, 1)
-    FreezeEntityPosition(GetPlayerPed(-1),false)
-    SetEntityVisible(GetPlayerPed(-1),true)
-    SetVehicleColours(personalvehicle2, colors[1], colors[2])
-    SetVehicleExtraColours(personalvehicle2, extra_colors[1], extra_colors[2])
-    TaskWarpPedIntoVehicle(GetPlayerPed(-1), personalvehicle2 ,-1)
-    SetVehicleEngineOn(personalvehicle2,  true,  true)
-
--------------------------------  
-
-    FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Block player car
-    SetVehicleDoorsLocked(GetVehiclePedIsUsing(GetPlayerPed(-1)), 4) -- Lock all door
-    SetVehicleNumberPlateText(GetVehiclePedIsUsing(GetPlayerPed(-1)), GetPlayerName(PlayerId())) -- Change plate by player name
-    Wait(1000)
-    TriggerServerEvent('hc:plyReady') -- Send to server that player is ready
-    ready = true --Ready client side
-    FadingIn(500)
-    DrawMissionText("Waiting for ~h~~y~ other players~w~", 10000)
 end)
 
 
 --The server send "start" to players when all players are ready
 RegisterNetEvent('hc:startRun')
 AddEventHandler('hc:startRun', function()
-    Citizen.Wait(500)
-    N_0x10d373323e5b9c0d()
+    if GCA then
+        Citizen.Wait(500)
+        N_0x10d373323e5b9c0d()
         if IsPedSittingInAnyVehicle(GetPlayerPed(-1)) then
             if GetPlayerTeam(PlayerId()) == 1 then
                 --blip large
@@ -467,30 +614,43 @@ AddEventHandler('hc:startRun', function()
         else
             TriggerEvent('chatMessage', '', { 0, 0, 0 }, "^2 Client: You're not in a car")
         end
+    end
 end)
+
+Citizen.CreateThread( function()
+    RequestStreamedTextureDict( "mplobby" )
+    while true do
+        Wait( 0 )
+        if GCA then
+            DrawPlayerList()
+        end
+    end
+end )
 
 Citizen.CreateThread( function()
     while true do
         Wait(0)
-         if IsPedFatallyInjured(PlayerPedId()) then
-            if teamRunner then
-                Wait(500)
-                --EndScreen("Tu t'es fait eu!!", "DeathFailOut") --Determine l'ecran de fin
-                --endScreen = true --Fait afficher l'ecran de fin
-                inRun = false --Not "in run" anymore
-                ready = false --Not ready anymore
-                Wait(2500)
-                TriggerServerEvent('hc:runnerDead') --Send toi server that player is dead
-                Wait(1000)
-                touch = 0
-            elseif teamCop then
-                Wait(500)
-                inRun = false --Not "in run" anymore
-                ready = false --Not ready anymore
-                Wait(2500)
-                TriggerServerEvent('hc:copDead')
+        if GCA then
+            if IsPedFatallyInjured(PlayerPedId()) then
+                if teamRunner then
+                    Wait(500)
+                    --EndScreen("Tu t'es fait eu!!", "DeathFailOut") --Determine l'ecran de fin
+                    --endScreen = true --Fait afficher l'ecran de fin
+                    inRun = false --Not "in run" anymore
+                    ready = false --Not ready anymore
+                    Wait(2500)
+                    TriggerServerEvent('hc:runnerDead') --Send toi server that player is dead
+                    Wait(1000)
+                    touch = 0
+                elseif teamCop then
+                    Wait(500)
+                    inRun = false --Not "in run" anymore
+                    ready = false --Not ready anymore
+                    Wait(2500)
+                    TriggerServerEvent('hc:copDead')
+                end
+                    --endScreen = false --arrete d'afficher l'ecran de fin
             end
-                --endScreen = false --arrete d'afficher l'ecran de fin
         end
     end
 end)
@@ -498,8 +658,10 @@ end)
 Citizen.CreateThread( function()
     while true do
         Wait(0)
-        if not inRun then
-            FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Block player car
+        if GCA then
+            if not inRun then
+                FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Block player car
+            end
         end
     end
 end)
@@ -508,9 +670,11 @@ end)
 Citizen.CreateThread( function()
     while true do
         Wait(1000)
-        if teamRunner then
-            if inRun then
-                TriggerServerEvent('hc:addTime')
+        if GCA then
+            if teamRunner then
+                if inRun then
+                    TriggerServerEvent('hc:addTime')
+                end
             end
         end
     end
@@ -520,57 +684,67 @@ end)
 Citizen.CreateThread( function()
 	while true do
 		Citizen.Wait(0)
-        SetPlayerWantedLevel(PlayerId(), 0, false)
-        SetPlayerWantedLevelNow(PlayerId(), false)
-        for i = 0, 31 do
-			if NetworkIsPlayerActive( i ) then
-				table.insert( players, i )
-			end
-		end
-		if teamCop then --Cops
+        if GCA then
+            SetPlayerWantedLevel(PlayerId(), 0, false)
+            SetPlayerWantedLevelNow(PlayerId(), false)
             for i = 0, 31 do
-                if GetPlayerTeam(i) == 2 then
-                    if GetPlayerPed(-1) ~= GetPlayerPed(i) then
-                        if HasEntityBeenDamagedByEntity(GetVehiclePedIsUsing(GetPlayerPed(i)), GetVehiclePedIsUsing(GetPlayerPed(-1)), 1) then
-                            srvId = GetPlayerServerId(i)
-                            TriggerServerEvent('hc:damageRunner', srvId)
-                            TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Touched! ')
+    			if NetworkIsPlayerActive( i ) then
+    				table.insert( players, i )
+    			end
+    		end
+    		if teamCop then --Cops
+                for i = 0, 31 do
+                    if GetPlayerTeam(i) == 2 then
+                        if GetPlayerPed(-1) ~= GetPlayerPed(i) then
+                            if HasEntityBeenDamagedByEntity(GetVehiclePedIsUsing(GetPlayerPed(i)), GetVehiclePedIsUsing(GetPlayerPed(-1)), 1) then
+                                srvId = GetPlayerServerId(i)
+                                TriggerServerEvent('hc:damageRunner', srvId)
+                                TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Touched! ')
+                            end
                         end
                     end
                 end
+                --AddBlipForRadius(GetEntityCoords(GetPlayerPed(-1), true), 500)      
             end
-            --AddBlipForRadius(GetEntityCoords(GetPlayerPed(-1), true), 500)      
-        end 
+        end
     end
 end)
 
 RegisterNetEvent('hc:numOfPlayers')
 AddEventHandler('hc:numOfPlayers', function(numOfPlayers)
-    plyInGame = numOfPlayers
+    if GCA then
+            plyInGame = numOfPlayers
+        end
 end)
 
 RegisterNetEvent('hc:joinSpectate')
 AddEventHandler('hc:joinSpectate', function()
-    runInProgress = true
-    inRun = false
-    spectatePlayer()
+    if GCA then
+        runInProgress = true
+        inRun = false
+        spectatePlayer()
+    end
 end)
 
 RegisterNetEvent('hc:endRun')
 AddEventHandler('hc:endRun', function()
-    ready = false
-    runInProgress = false
-    inRun = false
-    --TriggerServerEvent('hc:newTeam')
+    if GCA then
+        ready = false
+        runInProgress = false
+        inRun = false
+        --TriggerServerEvent('hc:newTeam')
+    end
 end)
 
 RegisterNetEvent('hc:runnerTouched')
 AddEventHandler('hc:runnerTouched', function()
-    touch = touch + 1
-    if touch == 3 then
-        Citizen.Wait(500)
-        SetEntityHealth(GetPlayerPed(-1), 0)
-        Citizen.Wait(1000)
-        AddExplosion(GetEntityCoords(GetPlayerPed(-1)), 6, 0.5, true, false, 0.5)
+    if GCA then
+        touch = touch + 1
+        if touch == 3 then
+            Citizen.Wait(500)
+            SetEntityHealth(GetPlayerPed(-1), 0)
+            Citizen.Wait(1000)
+            AddExplosion(GetEntityCoords(GetPlayerPed(-1)), 6, 0.5, true, false, 0.5)
+        end
     end
 end)
