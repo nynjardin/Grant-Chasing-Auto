@@ -374,7 +374,7 @@ Citizen.CreateThread(function()
             DrawMarker(1, GCAStart[1], GCAStart[2], GCAStart[3], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 8.0, 1000.0, 255, 255, 255, 70, 0, 0, 2, 0, 0, 0, 0)
             local lPlyCoords = GetEntityCoords(GetPlayerPed(-1), true)
             if GetDistanceBetweenCoords(lPlyCoords.x, lPlyCoords.y, lPlyCoords.z, GCAStart[1], GCAStart[2], GCAStart[3], true) < 4 then
-                DrawMissionText("Press ~g~'A' ~s~or ~b~'Enter' ~s~to start ~h~~r~Grant Chasing Auto", 10000)
+                DrawMissionText("Press ~g~'A' ~s~or ~b~'Enter' ~s~to start ~h~~r~Grant Chasing Auto", 1000)
                 if IsControlJustPressed(1,201) then
                     GCA = true
                     TriggerServerEvent('hc:firstJoin')
@@ -544,7 +544,7 @@ AddEventHandler('hc:startingBlock', function(spwNum)
             Citizen.Wait(0)
         end
         TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Vehicle model loaded' )
-        personalvehicle2 = CreateVehicle(modelVeh2, spawnPos[1], spawnPos[2], spawnPos[3], 228.2736, true, false)
+        personalvehicle2 = CreateVehicle(modelVeh2, spawnPos[1], spawnPos[2], spawnPos[3], spawnPos[4], true, false)
 
         TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1 Client: Choosen Car: '..modelVeh2)
 
