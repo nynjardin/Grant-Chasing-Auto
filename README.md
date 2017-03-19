@@ -12,7 +12,7 @@ A Cop Vs Robber like gamemode for FiveM
 * Change the blip system to a system more logic with gamemode
 * ~~Choose new starting point~~
 * ~~Make Runner can win too (actually, only cop can win)~~
-* Orient correcly vehicle on spanw when ready
+* ~~Orient correcly vehicle on spanw when ready~~
 * ~~Show players with team~~
 * Block the game starting if there is too many Runners
 * Merge meta files of addon cars
