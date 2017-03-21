@@ -47,6 +47,8 @@ local function SetTeam()
             cops[source] = nil
         end
     end
+    TriggerClientEvent('hc:numTeam', -1, runnersTeam, copsTeam)
+    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "Cops: "..copsTeam.." and Runners: "..runnersTeam)
 end
 
 RegisterServerEvent('hc:newTeam')
@@ -93,6 +95,8 @@ AddEventHandler('hc:changeTeam', function(team)
     end
     print("nombre de flics: "..copsTeam)
     print("nombre de runners: "..runnersTeam)
+    TriggerClientEvent('hc:numTeam', -1, runnersTeam, copsTeam)
+    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "Cops: "..copsTeam.." and Runners: "..runnersTeam)
 end)
 
 RegisterServerEvent('hc:firstJoin')
@@ -109,6 +113,8 @@ AddEventHandler('hc:firstJoin', function()
     else
         TriggerClientEvent('hc:selectCar', source)
     end
+    TriggerClientEvent('hc:numTeam', -1, runnersTeam, copsTeam)
+    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "Cops: "..copsTeam.." and Runners: "..runnersTeam)
 end)
 
 
@@ -265,8 +271,8 @@ AddEventHandler('hc:plyQuit', function()
     end
     if playerList[source] then
         playerList[source] = nil
+        playerCount = playerCount - 1
     end
-    playerCount = playerCount - 1
     runningInProgress = false
     runnersDead = 0
     copsDead = 0
@@ -277,12 +283,15 @@ AddEventHandler('hc:plyQuit', function()
     placing = 0
     placingCop = 0
     placingRunner = 0
+    TriggerClientEvent('hc:numOfPlayers', -1, playerCount)
+    TriggerClientEvent('hc:numTeam', -1, runnersTeam, copsTeam)
+    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "Cops: "..copsTeam.." and Runners: "..runnersTeam)
 end)
 
 
 AddEventHandler('playerDropped', function()
-    playerCount = playerCount - 1
     if playerList[source] then
+        playerCount = playerCount - 1
         playerList[source] = nil
         print("Nomber of players: "..playerCount)
     end
@@ -314,8 +323,10 @@ AddEventHandler('playerDropped', function()
             selectcar = true
             TriggerClientEvent('hc:selectCar', -1)
         end
-        TriggerClientEvent('hc:numOfPlayers', -1, playerCount)
     end
+    TriggerClientEvent('hc:numOfPlayers', -1, playerCount)
+    TriggerClientEvent('hc:numTeam', -1, runnersTeam, copsTeam)
+    TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "Cops: "..copsTeam.." and Runners: "..runnersTeam)
 end)
 
 

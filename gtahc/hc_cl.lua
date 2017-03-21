@@ -10,6 +10,8 @@ local plyToSpec = players[plyRun]
 local plyInGame = 0
 local inRun = false
 local gameTimer = 0
+local cops = 0
+local runners = 0
 
 local GCA = false
 
@@ -395,6 +397,14 @@ end)
     end
 end)]]
 
+RegisterNetEvent('hc:numTeam')
+AddEventHandler('hc:numTeam', function(numRunner, numCop)
+    if GCA then
+        runners = numRunner
+        cops = numCop
+    end
+end)
+
 
 RegisterNetEvent('hc:setTeam')
 AddEventHandler('hc:setTeam', function(t)
@@ -493,7 +503,7 @@ AddEventHandler('hc:selectCar', function()
                     QuitGCA()
                 end
             --as long as nothing validate, show car
-                if IsControlJustPressed(1,201) and plyInGame > 1 then -- 201 : "A" or Enter
+                if IsControlJustPressed(1,201) and (plyInGame > 1) and (cops >= runners) and (runners >= 1) then -- 201 : "A" or Enter
                     --modelVeh = GetHashKey(carToShow)
                     FadingOut(500)
                     Wait(500)
@@ -516,7 +526,6 @@ AddEventHandler('hc:selectCar', function()
             else return end
         end
     end
-
 end)
 
 
@@ -624,6 +633,9 @@ Citizen.CreateThread( function()
         Wait( 0 )
         if GCA then
             DrawPlayerList()
+            if not inRun then
+                FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Block player car
+            end
         end
     end
 end )
