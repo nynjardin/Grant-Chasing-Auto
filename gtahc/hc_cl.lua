@@ -148,14 +148,16 @@ local function DrawPlayerList()
         AddTextComponentString( GetPlayerName( v ) )
         DrawText( 0.015, 0.007 + ( k * 0.03 ) )
         
-        --Talk Indicator
-        local transparency = 60
-        
-        if NetworkIsPlayerTalking( v ) then
-            transparency = 255
+        --Status Indicator
+        if GetPlayerParachuteTintIndex(v) == 1 then --In lobby - not ready
+            DrawSprite( "mpleaderboard", "leaderboard_voteblank_icon", 0.2, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 255, 0, 0, 200 ) -- Empty box
+        elseif GetPlayerParachuteTintIndex(v) == 2 then --Ready
+            DrawSprite( "mplobby", "mp_charcard_stats_icons10", 0.2, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 0, 255, 0, 200 ) -- Box checked
+        elseif GetPlayerParachuteTintIndex(v) == 3 then --In Run
+            DrawSprite( "mpleaderboard", "leaderboard_steeringwheel_icon", 0.2, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 255, 255, 255, 200 ) --Wheel
+        elseif GetPlayerParachuteTintIndex(v) == 4 then --Dead
+            DrawSprite( "mpleaderboard", "leaderboard_deaths_icon", 0.2, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 255, 255, 255, 200 ) --Skull
         end
-        
-        DrawSprite( "mplobby", "mp_charcard_stats_icons9", 0.2, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 255, 255, 255, transparency )
     end
 end
 
@@ -354,7 +356,6 @@ function QuitGCA()
         --local lPlyCoords = GetEntityCoords(GetPlayerPed(-1), true)
         --RequestCollisionAtCoord(lPlyCoords.x, lPlyCoords.y, lPlyCoords.z, 1)
         --NetworkSetInSpectatorMode(0, GetPlayerPed(-1))
-        
     end
 end
 
@@ -426,7 +427,7 @@ end)
 RegisterNetEvent('hc:selectCar')
 AddEventHandler('hc:selectCar', function()
     
-        
+    
     endScreen = false
     if GetPlayerTeam(PlayerId()) == 1 then -- police ?
         carList = {"polf430","pol718","polaven","polbuga","polmp4","polp1","polgt500"}
@@ -441,6 +442,7 @@ AddEventHandler('hc:selectCar', function()
     while true do
         Citizen.Wait(0)
         if GCA then
+            SetPlayerParachuteTintIndex(PlayerId(), 1) 
             if not ready then
                 --Choosing car
                 if IsControlJustPressed(1,190) and num < #carList then --Right Arrow
@@ -533,6 +535,7 @@ end)
 RegisterNetEvent('hc:startingBlock')
 AddEventHandler('hc:startingBlock', function(spwNum)
     if GCA then
+        SetPlayerParachuteTintIndex(PlayerId(), 2) 
         Wait(500)
         local spawnPos = SpawnPositions[spwNum]
         if GetPlayerTeam(PlayerId()) == 1 then -- police ?
@@ -587,6 +590,7 @@ end)
 RegisterNetEvent('hc:startRun')
 AddEventHandler('hc:startRun', function()
     if GCA then
+        SetPlayerParachuteTintIndex(PlayerId(), 3)
         Citizen.Wait(500)
         N_0x10d373323e5b9c0d()
         if IsPedSittingInAnyVehicle(GetPlayerPed(-1)) then
@@ -621,6 +625,7 @@ AddEventHandler('hc:startRun', function()
             gameTimer = GetGameTimer() + 180000
             runInProgress = true
             inRun = true
+             
         else
             TriggerEvent('chatMessage', '', { 0, 0, 0 }, "^2 Client: You're not in a car")
         end
@@ -629,6 +634,8 @@ end)
 
 Citizen.CreateThread( function()
     RequestStreamedTextureDict( "mplobby" )
+    RequestStreamedTextureDict( "commonmenu" )
+    RequestStreamedTextureDict( "mpleaderboard" )
     while true do
         Wait( 0 )
         if GCA then
@@ -645,6 +652,7 @@ Citizen.CreateThread( function()
         Wait(0)
         if GCA then
             if IsPedFatallyInjured(PlayerPedId()) then
+                SetPlayerParachuteTintIndex(PlayerId(), 4) 
                 if teamRunner then
                     Wait(500)
                     --EndScreen("Tu t'es fait eu!!", "DeathFailOut") --Determine l'ecran de fin
