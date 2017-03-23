@@ -16,6 +16,8 @@ local placingCop = 0
 local placingRunner = 0
 local selectcar = false
 
+local lastTouch = 0
+
 local function SetTeam()
     --team = math.random(1,4)
     --print("Random Team is: "..team)
@@ -150,7 +152,15 @@ AddEventHandler('hc:damageRunner', function(n)
     TriggerClientEvent('hc:runnerTouched', n)
     local name = GetPlayerName(source)
     TriggerClientEvent("chatMessage", n, '', { 0, 0, 0 }, "^0* You have been ^1touch ^0by "..name)
+    lastTouch = source
 end)
+
+RegisterServerEvent('hc:runner3Touch')
+AddEventHandler('hc:runner3Touch', function()
+    TriggerClientEvent("hc:updateScore", lastTouch)
+end)
+
+
 
 RegisterServerEvent('hc:runnerWon')
 AddEventHandler('hc:runnerWon', function()
@@ -174,6 +184,8 @@ AddEventHandler('hc:runnerWon', function()
     end
 end)
 
+
+
 RegisterServerEvent('hc:addTime')
 AddEventHandler('hc:addTime', function()
     timer = timer + 1
@@ -184,6 +196,7 @@ AddEventHandler('hc:addTime', function()
         TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* 1 minute Left!!")
     end
     if timer == 180 then
+        TriggerClientEvent("hc:updateScore", source)
         TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Runner Win!!")
         TriggerClientEvent('hc:endRun', -1)
         runnersDead = 0
@@ -208,7 +221,8 @@ AddEventHandler('hc:runnerDead', function()
     local name = GetPlayerName(source)
 	TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* "..name.." owned!!!")
     TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Only "..runnersTeam.." runners left!!")
-	print(source.." is dead")
+	print(name.." is dead")
+    
     if runnersTeam == runnersDead then
         TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* Cop Win!!")
         TriggerClientEvent('hc:endRun', -1)
@@ -236,7 +250,7 @@ AddEventHandler('hc:copDead', function()
     copsDead = copsDead + 1
     local name = GetPlayerName(source)
     TriggerClientEvent("chatMessage", -1, '', { 0, 0, 0 }, "^1* "..name.." is dead!!!")
-    print(source.." is dead")
+    print(name.." is dead")
     if copsTeam == copsDead then
         TriggerClientEvent('hc:endRun', -1)
         runnersDead = 0

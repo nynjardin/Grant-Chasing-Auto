@@ -13,6 +13,9 @@ local gameTimer = 0
 local cops = 0
 local runners = 0
 
+local scores = 0
+local points = 0
+
 local GCA = false
 
 local pr = 255
@@ -89,6 +92,7 @@ local runnersCarList = {"adder","banshee2","bullet","cheetah","entityxf","sheava
 local num = 1 --# of the car in car list to show first
 local carToShow = carList[num] --carToShow become the car to show
 
+
 local function DrawPlayerList()
     local players = {}
 
@@ -116,6 +120,14 @@ local function DrawPlayerList()
         local r
         local g
         local b
+
+        local pr = 255
+        local pg = 255
+        local pb = 255
+
+        local xIco = 0.018
+        local xTxt = 0.025
+        local xScore = 0.2
         
         if k % 2 == 0 then
             r = 68
@@ -146,21 +158,38 @@ local function DrawPlayerList()
         SetTextColour( pr, pg, pb, 255 )
         SetTextEntry( "STRING" )
         AddTextComponentString( GetPlayerName( v ) )
-        DrawText( 0.015, 0.007 + ( k * 0.03 ) )
+        DrawText( xTxt, 0.007 + ( k * 0.03 ) )
+        if GCA then
+            SetTextFont( 4 )
+            SetTextScale( 0.45, 0.45 )
+            SetTextWrap(0.11,  0.205)
+            SetTextRightJustify(true)
+            SetTextColour( 255, 255, 255, 255 )
+            SetTextEntry( "STRING" )
+            AddTextComponentString( tostring(Score(v)) )
+            DrawText( xScore, 0.007 + ( k * 0.03 ) )
+        end
         
         --Status Indicator
-        if GetPlayerParachuteTintIndex(v) == 1 then --In lobby - not ready
-            DrawSprite( "mpleaderboard", "leaderboard_voteblank_icon", 0.2, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 255, 0, 0, 200 ) -- Empty box
-        elseif GetPlayerParachuteTintIndex(v) == 2 then --Ready
-            DrawSprite( "mplobby", "mp_charcard_stats_icons10", 0.2, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 0, 255, 0, 200 ) -- Box checked
-        elseif GetPlayerParachuteTintIndex(v) == 3 then --In Run
-            DrawSprite( "mpleaderboard", "leaderboard_steeringwheel_icon", 0.2, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 255, 255, 255, 200 ) --Wheel
-        elseif GetPlayerParachuteTintIndex(v) == 4 then --Dead
-            DrawSprite( "mpleaderboard", "leaderboard_deaths_icon", 0.2, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 255, 255, 255, 200 ) --Skull
+        if DecorGetInt(GetPlayerPed(v), "status") == 1 then --In lobby - not ready
+            DrawSprite( "commonmenu", "shop_box_blank", xIco, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 255, 0, 0, 200 ) -- Empty box
+        elseif DecorGetInt(GetPlayerPed(v), "status") == 2 then --Ready
+            DrawSprite( "commonmenu", "shop_box_tick", xIco, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 0, 255, 0, 200 ) -- Box checked
+        elseif DecorGetInt(GetPlayerPed(v), "status") == 3 then --In Run
+            DrawSprite( "mpleaderboard", "leaderboard_steeringwheel_icon", xIco, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 255, 255, 255, 200 ) --Wheel
+        elseif DecorGetInt(GetPlayerPed(v), "status") == 4 then --Dead
+            DrawSprite( "mpleaderboard", "leaderboard_deaths_icon", xIco, 0.024 + ( k * 0.03 ), 0.015, 0.025, 0, 255, 255, 255, 200 ) --Skull
         end
     end
 end
 
+function Score(ply)
+    if not DecorGetInt(GetPlayerPed(ply), "score") then
+        return 0
+    elseif DecorGetInt(GetPlayerPed(ply), "score") then
+        return DecorGetInt(GetPlayerPed(ply), "score")
+    end
+end
 
 function FadingOut(time)
     if not IsScreenFadedOut() then
@@ -442,7 +471,8 @@ AddEventHandler('hc:selectCar', function()
     while true do
         Citizen.Wait(0)
         if GCA then
-            SetPlayerParachuteTintIndex(PlayerId(), 1) 
+            
+            DecorSetInt(GetPlayerPed(-1), "status", 1)
             if not ready then
                 --Choosing car
                 if IsControlJustPressed(1,190) and num < #carList then --Right Arrow
@@ -535,7 +565,7 @@ end)
 RegisterNetEvent('hc:startingBlock')
 AddEventHandler('hc:startingBlock', function(spwNum)
     if GCA then
-        SetPlayerParachuteTintIndex(PlayerId(), 2) 
+        DecorSetInt(GetPlayerPed(-1), "status", 2)
         Wait(500)
         local spawnPos = SpawnPositions[spwNum]
         if GetPlayerTeam(PlayerId()) == 1 then -- police ?
@@ -590,7 +620,7 @@ end)
 RegisterNetEvent('hc:startRun')
 AddEventHandler('hc:startRun', function()
     if GCA then
-        SetPlayerParachuteTintIndex(PlayerId(), 3)
+        DecorSetInt(GetPlayerPed(-1), "status", 3)
         Citizen.Wait(500)
         N_0x10d373323e5b9c0d()
         if IsPedSittingInAnyVehicle(GetPlayerPed(-1)) then
@@ -633,16 +663,16 @@ AddEventHandler('hc:startRun', function()
 end)
 
 Citizen.CreateThread( function()
+    DecorRegister("status",  3)
+    DecorRegister("score",  3)
     RequestStreamedTextureDict( "mplobby" )
     RequestStreamedTextureDict( "commonmenu" )
     RequestStreamedTextureDict( "mpleaderboard" )
+    DecorSetInt(GetPlayerPed(-1), "score", scores)
     while true do
         Wait( 0 )
         if GCA then
             DrawPlayerList()
-            if not inRun then
-                FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Block player car
-            end
         end
     end
 end )
@@ -652,7 +682,7 @@ Citizen.CreateThread( function()
         Wait(0)
         if GCA then
             if IsPedFatallyInjured(PlayerPedId()) then
-                SetPlayerParachuteTintIndex(PlayerId(), 4) 
+                DecorSetInt(GetPlayerPed(-1), "status", 4) 
                 if teamRunner then
                     Wait(500)
                     --EndScreen("Tu t'es fait eu!!", "DeathFailOut") --Determine l'ecran de fin
@@ -683,9 +713,13 @@ Citizen.CreateThread( function()
             if not inRun then
                 FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  true) -- Block player car
             end
+        elseif not GCA then
+            FreezeEntityPosition(GetVehiclePedIsUsing(GetPlayerPed(-1)),  false) -- Block player car
         end
     end
 end)
+
+
 
 
 Citizen.CreateThread( function()
@@ -701,6 +735,14 @@ Citizen.CreateThread( function()
     end
 end)
 
+RegisterNetEvent('hc:updateScore')
+AddEventHandler('hc:updateScore', function()
+    if GCA then
+        scores = scores + 1
+        DecorSetInt(GetPlayerPed(-1), "score", scores)
+        TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1Score: '..DecorGetInt(GetPlayerPed(-1), "score"))
+    end
+end)
 
 Citizen.CreateThread( function()
 	while true do
@@ -766,6 +808,7 @@ AddEventHandler('hc:runnerTouched', function()
             SetEntityHealth(GetPlayerPed(-1), 0)
             Citizen.Wait(1000)
             AddExplosion(GetEntityCoords(GetPlayerPed(-1)), 6, 0.5, true, false, 0.5)
+            TriggerServerEvent('hc:runner3Touch')
         end
     end
 end)
