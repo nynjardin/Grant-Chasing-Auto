@@ -14,7 +14,6 @@ local cops = 0
 local runners = 0
 
 local scores = 0
-local points = 0
 
 local GCA = false
 
@@ -456,7 +455,7 @@ end)
 RegisterNetEvent('hc:selectCar')
 AddEventHandler('hc:selectCar', function()
     
-    
+    DecorSetInt(GetPlayerPed(-1), "score", scores)
     endScreen = false
     if GetPlayerTeam(PlayerId()) == 1 then -- police ?
         carList = {"polf430","pol718","polaven","polbuga","polmp4","polp1","polgt500"}
@@ -693,12 +692,14 @@ Citizen.CreateThread( function()
                     TriggerServerEvent('hc:runnerDead') --Send toi server that player is dead
                     Wait(1000)
                     touch = 0
+                    DecorSetInt(GetPlayerPed(-1), "score", scores)
                 elseif teamCop then
                     Wait(500)
                     inRun = false --Not "in run" anymore
                     ready = false --Not ready anymore
                     Wait(2500)
                     TriggerServerEvent('hc:copDead')
+                    DecorSetInt(GetPlayerPed(-1), "score", scores)
                 end
                     --endScreen = false --arrete d'afficher l'ecran de fin
             end
@@ -740,7 +741,7 @@ AddEventHandler('hc:updateScore', function()
     if GCA then
         scores = scores + 1
         DecorSetInt(GetPlayerPed(-1), "score", scores)
-        TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1Score: '..DecorGetInt(GetPlayerPed(-1), "score"))
+        --TriggerEvent('chatMessage', '', { 0, 0, 0 }, '^1Score: '..DecorGetInt(GetPlayerPed(-1), "score"))
     end
 end)
 
